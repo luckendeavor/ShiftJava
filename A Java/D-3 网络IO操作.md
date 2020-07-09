@@ -51,7 +51,7 @@ public static void main(String[] args) throws IOException {
 - **Socket**：客户端类
 - 服务器和客户端通过 InputStream 和 OutputStream 进行**输入输出**。下面的图是 BIO 模型。
 
-<img src="../../JavaNotes/A Java/assets/1563439394302.png" alt="1563439394302" style="zoom:70%;" />
+<img src="assets/1563439394302.png" alt="1563439394302" style="zoom:70%;" />
 
 #### Datagram类
 

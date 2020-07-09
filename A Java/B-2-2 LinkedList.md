@@ -83,7 +83,7 @@ transient Node<E> last;
 
 头尾指针都是 **transient** 修饰的。
 
-<img src="../../JavaNotes/A Java/assets/LinkedList_base-1591168327338.png" alt="1567326494424" style="zoom:60%;" />
+<img src="assets/LinkedList_base-1591168327338.png" alt="1567326494424" style="zoom:60%;" />
 
 ##### 2. 添加元素
 
@@ -91,7 +91,7 @@ transient Node<E> last;
 
 在队列尾部和在指定节点之前插入元素，如图所示：
 
-<img src="../../JavaNotes/A Java/assets/LinkedList_add-1591168403304.png" alt="1567329526899" style="zoom:71%;" />
+<img src="assets/LinkedList_add-1591168403304.png" alt="1567329526899" style="zoom:71%;" />
 
 当向指定节点之前插入一个节点时，当前节点的**后继为指定节点**，而**前驱结点为指定节点的前驱节点**。此外，还要修改前驱节点的后继为当前节点，以及后继节点的前驱为当前节点。
 
@@ -302,7 +302,7 @@ Node<E> node(int index) {
 
 **删除**指定位置的元素用 remove 方法。
 
-<img src="../../JavaNotes/A Java/assets/LinkedList_remove.png" alt="1567330247769" style="zoom:71%;" />
+<img src="assets/LinkedList_remove.png" alt="1567330247769" style="zoom:71%;" />
 
 ```java
 public E remove(int index) {

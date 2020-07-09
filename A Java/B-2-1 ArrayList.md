@@ -91,7 +91,7 @@ public class ArrayList<E> extends AbstractList<E>
 
 ArrayList 基于**动态数组**实现的，同时也实现了 RandomAccess 接口，所以支持**快速随机访问**。存放元素数组为 **elementData**。
 
-<img src="../../JavaNotes/A Java/assets/ArrayList_base-1591168031889.png" alt="1582447809913" style="zoom:71%;" />
+<img src="assets/ArrayList_base-1591168031889.png" alt="1582447809913" style="zoom:71%;" />
 
 ##### 2. 初始化
 

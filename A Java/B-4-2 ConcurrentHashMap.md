@@ -23,7 +23,7 @@ ConcurrentHashMap 就体现了这种思想，它同样实现了 Map 接口，也
 
 **JDK1.7 的 ConcurrentHashMap 的==分段锁==：**
 
-<img src="../../JavaNotes/A Java/assets/image-20200531141144749.png" alt="image-20200531141144749" style="zoom:45%;" />
+<img src="assets/image-20200531141144749.png" alt="image-20200531141144749" style="zoom:45%;" />
 
 **JDK1.8 的 ConcurrentHashMap（==TreeBin==: 红黑二叉树节点 ==Node==: 普通链表节点）：**
 
@@ -37,7 +37,7 @@ ConcurrentHashMap 就体现了这种思想，它同样实现了 Map 接口，也
 
 JDK1.7 版本中，ConcurrentHashMap 的数据结构是由一个 **Segment 数组和多个 HashEntry 数组** 构成。这种结构会经历**两次哈希计算**。
 
-<img src="../../JavaNotes/A Java/assets/image-20200507203656141.png" alt="image-20200507203656141" style="zoom:80%;" />
+<img src="assets/image-20200507203656141.png" alt="image-20200507203656141" style="zoom:80%;" />
 
 Segment 数组的意义就是将一个大的 table 分割成多个小的 table 来进行**加锁**，也就是前面提到的**锁分离技术**，而每**一个 Segment 元素存储的是 HashEntry 数组 + 链表**，这个和 HashMap 的数据存储结构一样。
 
@@ -88,7 +88,7 @@ final Segment<K,V>[] segments;
 static final int DEFAULT_CONCURRENCY_LEVEL = 16; 
 ```
 
-<img src="../../JavaNotes/A Java/assets/1563604891272.png" alt="1563604891272" style="zoom:67%;" />
+<img src="assets/1563604891272.png" alt="1563604891272" style="zoom:67%;" />
 
 ##### 2. 初始化
 
@@ -207,7 +207,7 @@ public int size() {
 
 基于 Java8。JDK1.8 的实现已经**摒弃了 Segment 的概念**，而是直接用 **==Node数组+链表+红黑树==** 的数据结构来实现，**并发控制使用 ==Synchronized 和 CAS==** 来操作，整个看起来就像是优化过且线程安全的 HashMap，虽然在 JDK1.8 中**还能看到 Segment **的数据结构，但是已经简化了属性，只是为了**兼容**旧版本。
 
-<img src="../../JavaNotes/A Java/assets/image-20200507205549890.png" alt="image-20200507205549890" style="zoom:80%;" />
+<img src="assets/image-20200507205549890.png" alt="image-20200507205549890" style="zoom:80%;" />
 
 说明：ConcurrentHashMap 的数据结构（**==数组+链表+红黑树==**），**桶中的结构可能是链表，也可能是红黑树**，红黑树是为了提高查找效率。
 

@@ -83,7 +83,7 @@ transient Node<K, V>[] table;
 
 Node 存储着**键值对**。数组中的每个位置被当成一个**桶**，一个桶存放一个**链表**，同一个**链表中存放哈希值相同**的 Node。
 
-<img src="../../JavaNotes/A Java/assets/1567483909960.png" alt="1567483909960" style="zoom:57%;" />
+<img src="assets/1567483909960.png" alt="1567483909960" style="zoom:57%;" />
 
 如果**哈希桶数组很大**，即使较差的 Hash 算法也会比较分散，如果哈希桶数组数组很小，即使好的 Hash 算法也会出现较多碰撞，所以就需要在**空间成本和时间成本**之间权衡，其实就是在根据实际情况确定**哈希桶数组**的大小，并在此基础上设计好的 hash 算法减少 Hash 碰撞。那么通过什么方式来控制 map 使得 Hash 碰撞的概率又小，哈希桶数组（Node[] table）占用空间又少呢？答案就是好的 **Hash 算法和扩容机制**。
 
@@ -102,7 +102,7 @@ HashMap **基本属性**如下。各个字段释义如下：
 
 对于拉链法而言，即使负载因子和 Hash 算法设计的**再合理**，也免不了会出现**拉链过长**的情况，一旦出现拉链过长，则会严重影响 HashMap 的性能，退化成**链表**。于是 JDK8 引入了**红黑树**。而当**链表长度太长（默认超过 8）且元素个数大于 64 时，链表就转换为红黑树**，利用红黑树快速增删改查的特点提高 HashMap 的性能，其中会用到红黑树的插入、删除、查找等算法。
 
-<img src="../../JavaNotes/A Java/assets/image-20200627191602455.png" alt="image-20200627191602455" style="zoom:67%;" />
+<img src="assets/image-20200627191602455.png" alt="image-20200627191602455" style="zoom:67%;" />
 
 下面是一些**静态常量**。
 
@@ -260,7 +260,7 @@ y%x : 00000010
 
 下面举例说明下，n 为 table 的长度。
 
-<img src="../../JavaNotes/A Java/assets/image-20200506172137005.png" alt="image-20200506172137005" style="zoom:50%;" />
+<img src="assets/image-20200506172137005.png" alt="image-20200506172137005" style="zoom:50%;" />
 
 上图计算时 **n 为默认的 16**，n - 1 就是 15，也就是十六进制的 **1111**。上面计算得到**桶的下标为 5**。
 
@@ -441,7 +441,7 @@ void transfer(Entry[] newTable) {
 
 这里假设 hash 算法就是简单的用键的哈希值一下表的大小取模（也就是数组的长度）。其中的哈希桶数组 table 的 size = 2， 取 key = **3、5、7**，put 顺序依次为 **5、7、3**（头插法）。在 mod 2 以后都冲突在 **table[1]** 这里了。这里假设负载因子  loadFactor = 1，即当键值对的实际大小 size 大于 table 的**实际大小**时进行**扩容**。接下来的三个步骤是哈希桶数组扩容 resize 为 4，然后所有的 Node 重新 **rehash** 的过程。就是重新计算数据槽，然后再放到新的。
 
-<img src="../../JavaNotes/A Java/assets/image-20200506183409544.png" alt="image-20200506183409544" style="zoom:50%;" />
+<img src="assets/image-20200506183409544.png" alt="image-20200506183409544" style="zoom:50%;" />
 
 下面看看 JDK1.8 做了**什么优化**。经过上述观测可以发现，由于使用的是 2 次幂的扩展(指长度扩为**原来 2 倍**)，所以旧元素的位置要么是在**原位置**，要么是在原位置再**移动原数组长度（oldSize）**的位置。看下图可以明白这句话的意思，n 为 table 的长度，图（a）表示**扩容前**的 key1 和 key2 两种 key 确定索引位置的示例，图（b）表示扩容后 key1 和 key2 两种 key 确定索引位置的示例，其中 hash1 是 key1 对应的**哈希与高位运算**结果。
 
@@ -449,11 +449,11 @@ void transfer(Entry[] newTable) {
 
 元素在**重新计算 hash 之后**，因为 n 变为 2 倍，那么 **n - 1** 的 mask 范围在高位**多 1bit (红色)**，因此**新的 index** 就会发生这样的变化（红色的是新增的 bit 位）：
 
-<img src="../../JavaNotes/A Java/assets/image-20200612185839379.png" alt="image-20200612185839379" style="zoom:50%;" />
+<img src="assets/image-20200612185839379.png" alt="image-20200612185839379" style="zoom:50%;" />
 
 所以 Java8 在扩充 HashMap 的时候，**不需要**像 JDK1.7 的实现那样**重新计算 hash**，只需要看看**原来的** hash 值**新增**的那个 **bit 是 1 还是 0** 就好了，**==是 0 的话索引不变，是 1 的话索引变成“原索引 + oldCap==”**，下图为 16 扩充为 32 的 resize 示意图，有的结点索引位置不变，有的增加了位置 OldSize：
 
-<img src="../../JavaNotes/A Java/assets/image-20200506200727537.png" alt="image-20200506200727537" style="zoom:47%;" />
+<img src="assets/image-20200506200727537.png" alt="image-20200506200727537" style="zoom:47%;" />
 
 这个设计确实非常的巧妙，既**省去**了重新**计算 hash 值**的时间，而且由于新增的 1bit 是 0 还是 1 可以认为是**随机**的，因此 resize 的过程，均匀的把之前的**冲突的节点分散**到新的 bucket 了。这一块就是 JDK1.8 **新增的优化点**。有一点注意区别，JDK1.7 中 rehash 的时候，旧链表迁移新链表的时候，**如果在新表的数组索引位置相同**，则链表**元素会倒置**（因为是头插法），但是从上图可以看出，JDK1.8 **不会倒置**（因为是尾插法）。
 
@@ -574,19 +574,19 @@ public class HashMapInfiniteLoop {
 
 通过设置断点让线程 1 和线程 2 同时 debug 到 **transfer** 方法的首行。注意此时两个线程已经**成功**添加数据。放开 thread1 的断点至 transfer 方法的“Entry next = e.next;” 这一行；然后放开线程 2 的的断点，让线程 2 进行 resize。结果如下图。
 
-<img src="../../JavaNotes/A Java/assets/image-20200506202402901.png" alt="image-20200506202402901" style="zoom:47%;" />
+<img src="assets/image-20200506202402901.png" alt="image-20200506202402901" style="zoom:47%;" />
 
 注意，Thread1 的 e 指向了 key(3)，而 next 指向了 key(7)，其在**线程二 rehash** 后，指向了线程二**重组后的链表**。
 
 线程一被调度回来执行，先是执行 **newTalbe[i] = e**， 然后是 **e = next**，导致了 e 指向了 **key(7)**，而**下一次循环**的 next = e.next 导致了 next 指向了 key(3)。
 
-<img src="../../JavaNotes/A Java/assets/image-20200612185919503.png" alt="image-20200612185919503" style="zoom:50%;" />
+<img src="assets/image-20200612185919503.png" alt="image-20200612185919503" style="zoom:50%;" />
 
 <img src="../../JavaNotes/A Java/assets/image-20200506202600087.png" alt="image-20200506202600087" style="zoom:50%;" />
 
 e.next = newTable[i] 导致 key(3).next 指向了 **key(7)**。注意：此时的 key(7).next 已经指向了 **key(3)**， **环形链表**就这样出现了。
 
-<img src="../../JavaNotes/A Java/assets/image-20200506202638375.png" alt="image-20200506202638375" style="zoom:50%;" />
+<img src="assets/image-20200506202638375.png" alt="image-20200506202638375" style="zoom:50%;" />
 
 于是，当我们用线程一调用 map.get(11) 时，悲剧就出现了：Infinite Loop。
 
@@ -594,11 +594,11 @@ e.next = newTable[i] 导致 key(3).next 指向了 **key(7)**。注意：此时�
 
 例如 B 的下一个指针**指向了 A**。
 
-<img src="../../JavaNotes/A Java/assets/image-20200506205127061.png" alt="image-20200506205127061" style="zoom:80%;" />
+<img src="assets/image-20200506205127061.png" alt="image-20200506205127061" style="zoom:80%;" />
 
 一旦几个线程都调整完成，就可能出现**环形链表**。
 
-<img src="../../JavaNotes/A Java/assets/image-20200506205207223.png" alt="image-20200506205207223" style="zoom:80%;" />
+<img src="assets/image-20200506205207223.png" alt="image-20200506205207223" style="zoom:80%;" />
 
 如果这个时候去取值，就出现了**无限循环**的状态。
 

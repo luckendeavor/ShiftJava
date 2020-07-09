@@ -57,7 +57,7 @@ PriorityQueue<String> priorityQueue = new PriorityQueue<>(Comparator.naturalOrde
 
 看图说话。
 
-<img src="../../JavaNotes/A Java/assets/image-20200505234935976.png" alt="image-20200505234935976" style="zoom:77%;" />
+<img src="assets/image-20200505234935976.png" alt="image-20200505234935976" style="zoom:77%;" />
 
 以下分析基于 JDK8。
 
@@ -164,7 +164,7 @@ private void grow(int minCapacity) {
 
 之后便是插入过程了，参考下面的插入 6 的过程（小顶堆）。
 
-<img src="../../JavaNotes/A Java/assets/image-20200505235435005.png" alt="image-20200505235435005" style="zoom:87%;" />
+<img src="assets/image-20200505235435005.png" alt="image-20200505235435005" style="zoom:87%;" />
 
 新的元素被放到**数组的最后**，对应到**完全二叉树**的最后一个叶子结点。由于新插入元素后，可能会导致小顶堆的结构被破坏，因此需要将**新插入的元素**（在小顶堆的最低层）**向上调整**，如果插入的元素比**父节点大**，那么就把**父节点调下来**，记录父节点的位置后继续向上调整，直到新元素其比**父节点元素值小为止**。
 
@@ -230,7 +230,7 @@ private void siftUpUsingComparator(int k, E x) {
 
 主要关注 **poll** 方法吧。首先看看过程图示。（堆中左子结点不一定比右子节点小啊）
 
-<img src="../../JavaNotes/A Java/assets/image-20200506000716096.png" alt="image-20200506000716096" style="zoom:80%;" />
+<img src="assets/image-20200506000716096.png" alt="image-20200506000716096" style="zoom:80%;" />
 
 ```java
 @SuppressWarnings("unchecked")

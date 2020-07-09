@@ -25,7 +25,7 @@ Map 接口的常用方法如下表。
 
 Map 接口主要实现类有：**HashMap、Hashtable、LinkedHashMap、TreeMap**。
 
-<img src="../../JavaNotes/A Java/assets/image-20200506092402583.png" alt="image-20200506092402583" style="zoom:67%;" />
+<img src="assets/image-20200506092402583.png" alt="image-20200506092402583" style="zoom:67%;" />
 
 (1) **HashMap**：它根据键的 hashCode 值存储数据，遍历是无序的。 **HashMap 只允许一条记录的键为 null，允许多条记录的值为 null**。HashMap **线程不安全**，即多线程同时操作 HashMap 可能会导致数据不一致。
 

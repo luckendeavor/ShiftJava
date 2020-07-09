@@ -64,7 +64,7 @@ while(iterator.hasNext()) {
 
 LinkedHashMap 结构如下图。
 
-<img src="../../JavaNotes/A Java/assets/LinkedHashMap_base.png" alt="1567478530282" style="zoom:47%;" />
+<img src="assets/LinkedHashMap_base.png" alt="1567478530282" style="zoom:47%;" />
 
 继承自 HashMap，因此具有和 HashMap 一样的**快速查找**特性。LinkedHashMap 的大多数方法的实现**直接使用了父类** HashMap 的方法。LinkedHashMap 可以说是 HashMap 和 LinkedList 的集合体，既使用了 HashMap 的数据结构，又借用了 LinkedList **双向链表**的结构。
 
@@ -99,7 +99,7 @@ static class Entry<K,V> extends HashMap.Node<K, V> {
 
 此时一个 Entry 结点拥有 **before，after 和 next** 三个指针，它们之间的关系如下图所示。
 
-<img src="../../JavaNotes/A Java/assets/image-20200507090708691.png" alt="image-20200507090708691" style="zoom:50%;" />
+<img src="assets/image-20200507090708691.png" alt="image-20200507090708691" style="zoom:50%;" />
 
 上面的结构图，定义了**头结点 head**，当调用迭代器进行遍历时，**通过 head 开始遍历**，通过 **before** 属性可以不断找到下一个，直到 tail 尾结点，从而实现**顺序性**。而在**同一个 hash**（在上图中表现了同一行）链表内部 after 和 next 效果是一样的。**不同点在于 before 和 after 可以连接不同 hash 槽之间的链表**。
 
@@ -182,7 +182,7 @@ void afterNodeInsertion(boolean evict) { }
 - 从 table 的角度看，新的 entry 需要插入到对应的 bucket 里，当有哈希冲突时，采用头插法将新的 entry 插入到冲突链表的头部。
 - 从 header 的角度看，新的 entry 需要插入到双向链表的**尾部**。
 
-<img src="../../JavaNotes/A Java/assets/LinkedHashMap_addEntry.png" alt="1567478530282" style="zoom:49%;" />
+<img src="assets/LinkedHashMap_addEntry.png" alt="1567478530282" style="zoom:49%;" />
 
 LinkedHashMap 的 put 其实就是 HashMap 的 put 方法。
 
@@ -504,11 +504,11 @@ get 时如果 **accessOrder** 为 true，即表示**访问顺序**，这时候�
 
 看看 HashMap 和 LinkedHashMap 的存储结构图，LinkedHashMap 其实就是可以看成 HashMap 的基础上，多了一个**双向链表**来维持顺序。
 
-<img src="../../JavaNotes/A Java/assets/1567483958427.png" alt="1567483958427" style="zoom:60%;" />
+<img src="assets/1567483958427.png" alt="1567483958427" style="zoom:60%;" />
 
 
 
-<img src="../../JavaNotes/A Java/assets/1567483989341.png" alt="1567483989341" style="zoom:60%;" />
+<img src="assets/1567483989341.png" alt="1567483989341" style="zoom:60%;" />
 
 - LinkedHashMap 是**继承于** HashMap，是基于 **HashMap 和双向链表**来实现的，双向链表只是为了**保证顺序**。
 - HashMap **无序**；LinkedHashMap **有序**，可分为**插入顺序和访问顺序**两种。如果是**访问顺序，那 put 和 get操作**已存在的 Entry 时，都会把 Entry 移动到双向链表的**表尾**(其实是先删除再插入)。

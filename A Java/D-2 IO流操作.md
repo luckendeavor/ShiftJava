@@ -6,7 +6,7 @@
 
 数据传输的核心在于传输数据源产生的数据，Java IO 分别为**输入流和输出流**，输入流完成外部数据向计算机内存写入，输出流则反之。而针对输入流和输出流，根据**字节和字符**的不同，又分为**字节流和字符流**。
 
-<img src="../../JavaNotes/A Java/assets/image-20200507222950746.png" alt="image-20200507222950746" style="zoom:49%;" />
+<img src="assets/image-20200507222950746.png" alt="image-20200507222950746" style="zoom:49%;" />
 
 字符流与字节流的关系：Java 中最小的计算单元是**字节**，没有字符流基于**字节流**就能进行 IO 操作，只是因为现实中**大量的数据都是文本字符**数据，基于此单独设计了**字符流**，使操作更简便。
 
@@ -28,7 +28,7 @@ File 对象仅仅用于**抽象**化描述一个**磁盘文件或目录**，却*
 
 **字节流**的体系大致如下：
 
-<img src="../../JavaNotes/A Java/assets/DP-Decorator-java.io.png" style="zoom:67%;" />
+<img src="assets/DP-Decorator-java.io.png" style="zoom:67%;" />
 
 ##### 1. 基类字节流InputStream/OutputStream
 
@@ -288,7 +288,7 @@ Java I/O 使用了==**装饰者模式**==来实现。以 InputStream 为例，
 - FileInputStream 是 InputStream 的子类，属于**具体组件**，提供了字节流的**输入**操作；
 - FilterInputStream 属于**装饰者**，用于**装饰具体组件**，为组件提供**额外**的功能。例如 BufferedInputStream 为 FileInputStream 提供**缓存**的功能。
 
-<img src="../../JavaNotes/A Java/assets/1563439368833.png" alt="1563439368833" style="zoom:77%;" />
+<img src="assets/1563439368833.png" alt="1563439368833" style="zoom:77%;" />
 
 需要**实例化**一个具有**缓存**功能的**字节流对象**时，只需要在 FileInputStream 对象上再**套一层** **BufferedInputStream** 对象即可。
 

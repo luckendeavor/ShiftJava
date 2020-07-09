@@ -32,7 +32,7 @@ private static final int MIN_INITIAL_CAPACITY = 8;
 
 ArrayDeque 底部也是使用**数组**存储元素，同时还使用了 **head 和 tail 两个索引**来记录当前数组的**使用状态**。head 是头部元素的索引，但注意 tail 不是尾部元素的索引，而是**尾部元素的下一位**，即**下一个**将要被加入的元素位置的索引。
 
-<img src="../../JavaNotes/A Java/assets/1567335804367.png" alt="1567335804367" style="zoom:60%;" />
+<img src="assets/1567335804367.png" alt="1567335804367" style="zoom:60%;" />
 
 ##### 2. 初始化
 
@@ -106,7 +106,7 @@ public void addLast(E e) {
 
 这段代码中，`(tail = (tail + 1) & (elements.length - 1)) == head` 这句有点难以理解。由于数组被当做**环形使用**，索引 0 看作紧挨着索引 **(length - 1)** 之后。参考下面的图片（tail 指向的是**下一个**即将存放元素的位置）。
 
-<img src="../../JavaNotes/A Java/assets/1567335804367.png" alt="1567335804367" style="zoom:60%;" />
+<img src="assets/1567335804367-1594271997072.png" alt="1567335804367" style="zoom:60%;" />
 
 那么为什么`(tail + 1) & (elements.length - 1)`就能保证按照环形取得**正确的下一个索引值**呢？这就和前面说到的 ArrayDeque 对容量的**特殊要求**有关了。下面对其正确性加以验证：
 
@@ -138,7 +138,7 @@ public void addFirst(E e) {
 
 在每次添加元素后如果**头索引和尾部索引**相遇，则说明数组空间**已满**需要进行**扩容**。 ArrayDeque 每次扩容都会在原有的容量上**翻倍**，这也是保证数组容量必须是 **2 的幂次方**。如下图所示，扩容后会复制内容，**复制后原数组内容被重排到新数组首部**，并将 head 放在**第一个**位置。
 
-<img src="../../JavaNotes/A Java/assets/1567336287071.png" alt="1567336287071" style="zoom:65%;" />
+<img src="assets/1567336287071.png" alt="1567336287071" style="zoom:65%;" />
 
 ```java
 private void doubleCapacity() {

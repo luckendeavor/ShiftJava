@@ -108,7 +108,7 @@ while (iterator.hasNext()) {
 
 下图为典型的红黑树：
 
-<img src="../../JavaNotes/A Java/assets/image-20200506220030047.png" alt="image-20200506220030047" style="zoom:43%;" />
+<img src="assets/image-20200506220030047.png" alt="image-20200506220030047" style="zoom:43%;" />
 
 **红黑树规则特点：**
 
@@ -250,7 +250,7 @@ public TreeMap(SortedMap<K, ? extends V> m) {
 
 put 方法为 Map 的核心方法，TreeMap 的 put 方法大概流程如下：
 
-<img src="../../JavaNotes/A Java/assets/image-20200507001555169.png" alt="image-20200507001555169" style="zoom:47%;" />
+<img src="assets/image-20200507001555169.png" alt="image-20200507001555169" style="zoom:47%;" />
 
 源码如下
 
