@@ -40,25 +40,22 @@ Output:
 <div align="center"> <img src="assets/49d2adc1-b28a-44bf-babb-d44993f4a2e3.gif" width="250px"> </div><br>
 
 ```java
-public boolean duplicate(int[] nums, int length, int[] duplication) {
+public int findRepeatNumber(int[] nums) {
     // Base case
-    if (nums == null || length <= 0)
-        return false;
+    if (nums == null || nums.length <= 0) return -1;
     // 遍历一次数组
-    for (int i = 0; i < length; i++) {
+    for (int i = 0; i < nums.length; i++) {
         // 如果当前位置不等于索引则不断进行交换
         while (nums[i] != i) {
             // 如果已经有了
             if (nums[i] == nums[nums[i]]) {
-                // 将重复的值记录到duplication[0]中
-                duplication[0] = nums[i];
-                return true;
+                return nums[i];
             }
             // 交换
             swap(nums, i, nums[i]);
         }
     }
-    return false;
+    return -1;
 }
 
 private void swap(int[] nums, int i, int j) {

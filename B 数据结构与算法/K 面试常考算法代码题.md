@@ -165,5 +165,56 @@ public class LRUCache {
 
 
 
+#### 发红包
+
+##### 1. 题目
+
+例如一个人在群里发了100块钱的红包，群里有10个人一起来抢红包，每人抢到的金额随机分配。一般规则：
+
+- 所有人抢到的金额之和要等于红包金额，不能多也不能少。
+- 每个人至少抢到1分钱。
+- 要保证红包拆分的金额尽可能分布均衡，不要出现两极分化太严重的情况。
+
+##### 2. 题解
+
+###### (1) 二倍均值法
+
+二倍均值法：假设**剩余**红包金额为 m 元，**剩余人数为 n**，那么有如下公式：
+
+**每次抢到的金额 = 随机区间 [0.01，m /n × 2 - 0.01]元**。
+
+这个公式保证了**每次随机金额的平均值是相等**的，不会因为抢红包的先后顺序而造成不公平。
+
+举个例子：假设有 5 个人，红包总额 100 元。100 ÷ 5 × 2 = 40，所以第 1 个人抢到的金额随机范围是 [0.01，39.99]元，在正常情况下，平均可以抢到 20 元。假设第 1 个人随机抢到了 20 元，那么剩余金额是 80 元。80 ÷ 4 × 2 = 40，所以第 2 个人抢到的金额的随机范围同样是 [0.01，39.99] 元，在正常的情况下，还是平均可以抢到 20 元。假设第 2 个人随机抢到了 20 元，那么剩余金额是 60 元。60 ÷ 3 × 2 = 40，所以第 3 个人抢到的金额的随机范围同样是 [0.01，39.99] 元，平均可以抢到 20 元。以此类推，每一次抢到**金额随机范围的均值是相等**的。
+
+注意：传入的**钱是以分为单位**，所以最后结果列表中红包是按分计算的，需要自己转换为元。
+
+```java
+public static List<Integer> divideRedPackage(Integer money, Integer people) {
+    List<Integer> moneyList = new ArrayList<>();
+    Integer restMoney = money;
+    Integer restPeople = people;
+    Random random = new Random();
+    for (int i = 0; i < people - 1; i++) {
+        // 随机范围：[1，剩余人均金额的2倍-1] 单位是:分
+        int curMoney = random.nextInt(restMoney / restPeople * 2 - 1) + 1;
+        moneyList.add(curMoney);
+        restMoney = restMoney - curMoney;
+        restPeople--;
+    }
+    // 最后还剩一份
+    moneyList.add(restMoney);
+    return moneyList;
+}
+
+public static void main(String[] args) {
+    List<Integer> amountList = divideRedPackage(1000, 10);
+    for (Integer amount : amountList) {
+        // 由于结果是分，这里转换为元
+        System.out.println("抢到金额:" + new BigDecimal(amount).divide(new BigDecimal(100)));
+    }
+}
+```
+
 
 

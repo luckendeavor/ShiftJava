@@ -424,20 +424,20 @@ pivot = left + (int) (Math.random() * (right - left + 1))
 代码实现有几种版本，下面的版本中 pivot 值在最**前面**（**面试用这个即可**）：
 
 ```java
-public static void quickSort2(int[] array) {
+public static void quickSort(int[] array) {
     if (array == null || array.length < 2) return;
-    quickSort2(array, 0, array.length - 1);
+    quickSort(array, 0, array.length - 1);
 }
 
-private static void quickSort2(int[] array, int left, int right) {
+private static void quickSort(int[] array, int left, int right) {
     if (left < right) {
-        int pivot = partition2(array, left, right);
-        quickSort2(array, left, pivot - 1);
-        quickSort2(array, pivot + 1, right);
+        int pivot = partition(array, left, right);
+        quickSort(array, left, pivot - 1);
+        quickSort(array, pivot + 1, right);
     }
 }
 
-private static int partition2(int[] array, int left, int right) {
+private static int partition(int[] array, int left, int right) {
     // 挑选一个随机的pivot索引并交换到第一个位置上
     int randomPivot = left + (int) (Math.random() * (right - left + 1));
     swap(array, randomPivot, left);
