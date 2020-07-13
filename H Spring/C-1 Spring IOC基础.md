@@ -2,11 +2,56 @@
 
 ### Spring IOC
 
-
-
 在 Spring 中，那些组成应用程序的主体及由 Spring IOC 容器所管理的对象，被称之为 **bean**。简单地讲，bean 就是由 IOC 容器初始化、装配及管理的对象，除此之外，bean 就与应用程序中的其他对象没有什么区别了。而 bean 的定义以及 bean 相互间的依赖关系将通过配置元数据来描述。
 
+#### 控制反转IOC
 
+##### 1. 谈谈对IOC的理解？
+
+IoC（Inverse of Control 控制反转）是一种**设计思想**，就是**将原本在程序中手动创建对象的控制权，交由 Spring 框架来管理。**  IoC 在其他语言中也有应用并非 Spring 特有。 **IoC 容器是 Spring 用来实现 IoC 的载体，  IoC 容器实际上就是个Map（key，value）,Map 中存放的是各种对象。**
+
+**控制**就是开发人员本来可以**控制**对象的**创建、管理**过程，**反转**就是将这个**权利交给外部的环境**去实现，比如 IOC 容器。反转之后失去了创建管理对象的权利，但是可以**不用再考虑对象的创建、管理等一系列的事情**。这样可以很大程度上简化应用的开发，把应用从复杂的依赖关系中解放出来。
+
+将对象之间的**相互依赖关系**交给 IoC 容器来管理，并由 IoC 容器完成对象的**注入**。  **IoC 容器就像是一个工厂一样，当需要创建一个对象的时候，只需要配置好配置文件/注解即可，完全不用考虑对象是如何被创建出来的。** 在实际项目中一个 Service 类可能有几百甚至上千个类作为它的底层，假如需要实例化这个 Service，可能要每次都要搞清这个 Service 所有底层类的构造函数，这可能会把人逼疯。如果利用 IoC 的话，就只需要完成配置然后在需要的地方引用就行了，这大大增加了项目的可维护性且降低了开发难度。
+
+例如：现有类 A 依赖于类 B：
+
+- **传统的开发方式** ：在类 A 中手动 new 出一个 B 的对象出来。
+- **使用 IoC 思想的开发方式** ：不通过 new 关键字来创建对象，而是通过 IoC 容器(Spring 框架) 来生成实例化对象。需要哪个对象，**直接从 IoC 容器里面获取**即可。
+
+##### 2. 控制反转的好处
+
+IoC 的思想就是两方之间不互相依赖，由第三方容器来管理相关资源。这样做的好处在于：
+
+1. 对象之间的**耦合度**或者说依赖程度降低；
+2. 资源变的**容易管理**；
+3. 降低了项目的开发难度并增加了可维护性。
+
+##### 3. IOC与DI的关系
+
+- IOC 是一种设计思想，这个设计思想就是 将原本在程序中手动创建对象的控制权，交由 Spring 框架来管理。
+
+- DI 是**依赖注入**，向**类里面属性注入值**。**依赖注入**是 IOC 最常见以及最合理的**实现方式**。**依赖注入不能单独存在，需要在 IOC 基础上完成操作**。
+
+##### 4. 依赖倒置原则
+
+假设设计一辆汽车：先设计轮子，然后根据轮子大小设计底盘，接着根据底盘设计车身，最后根据车身设计好整个汽车。这里就出现了一个**“依赖”关系**：汽车依赖车身，车身依赖底盘，底盘依赖轮子。
+
+<img src="assets/ioc1.jpg"/>
+
+这样设计看起来没问题，但是可维护性却很低。假设设计完工之后上司却突然说根据市场需求的变动，要把车子的轮子设计都改大一码。这下就蛋疼了：因为是根据轮子的尺寸设计的底盘，轮子的尺寸一改，底盘的设计就得修改；同样因为是根据底盘设计的车身，那么车身也得改，同理汽车设计也得改——整个设计几乎都得改！
+
+现在换一种思路。先设计汽车的**大概样子**，然后根据汽车的样子来设计车身，根据车身来设计底盘，最后根据底盘来设计轮子。这时候，**依赖关系就倒置**过来了：轮子依赖底盘， 底盘依赖车身， 车身依赖汽车。
+
+<img src="assets/ioc2.jpg"/>
+
+这时候，上司再说要改动轮子的设计，**就只需要改动轮子的设计**，而不需要动底盘，车身，汽车的设计了。
+
+这就是依赖倒置原则——**把原本的高层建筑依赖底层建筑“倒置”过来，变成底层建筑依赖高层建筑**。高层建筑决定需要什么，底层去实现这样的需求，但是高层并不用管底层是怎么实现的。这样就不会出现前面的“牵一发动全身”的情况。
+
+这几种概念的关系如下：
+
+<img src="assets/ioc3.jpg" style="zoom:50%;" />
 
 #### Bean作用域
 
@@ -43,6 +88,14 @@ public Person person() {
     return new Person();
 }
 ````
+
+> **Spring中的单例bean的线程安全问题**
+
+单例 bean **存在线程问题**，主要是因为当**多个**线程操作**同一个对象**的时候，对这个对象的**非静态成员变量的写操作**会存在线程安全问题。常见的有两种解决办法：
+
+1. 在 Bean 对象中尽量避免定义可变的成员变量（不太现实）。
+
+2. 在**类**中定义一个 **ThreadLocal** 成员变量，将需要的**==可变成员变量==保存在 ThreadLocal 中**（推荐的一种方式）。
 
 ##### 3. prototype
 
@@ -106,7 +159,7 @@ public class TestBean {
 
 
 
-#### Bean的装配
+#### Bean的装配与注册
 
 Spring 为实现 Bean 的信息定义，提供了**基于注解、基于配置类、基于 XML、基于 Groovy** 这几种 bean 装配方式，各种配置方式可混合使用。基于 XML 与 Groovy 配置这里就不涉及了。 
 
@@ -240,6 +293,117 @@ public class DatabaseConditional implements Condition {
 
 只有满足了**上述自定义的条件**，才会**装配** DataSource 。
 
+##### 5. 装配导入组件的注解
+
+往 IOC 容器**添加组件**的注解主要有下面。
+
+**(1)** 通过 **@ComponentScan + @Controller @Service @Respository @Component**。适用场景: 将**自己写的组件**加载到容器中。
+
+一般使用 **@Autowired** 注解自动装配 bean，要想把类标识成可用于 @Autowired 注解自动装配的 bean 的类，采用以下注解可实现：
+
+- @**Component** ：通用的注解，可标注**任意类**为 Spring 组件。如果一个 Bean **不知道**属于哪个层，可以使用@Component 注解标注。
+- @**Repository** : 对应**持久层**即 Dao 层，主要用于数据库相关操作。
+- @**Service** : 对应**服务层**，主要涉及一些复杂的逻辑，需要用到 Dao 层。
+- @**Controller** : 对应 Spring MVC **控制层**，主要用户接受用户请求并调用 Service 层返回数据给前端页面。
+
+**(2)** 通过 **@Bean** 的方式来导入组件(适用于导入**第三方组件**的类)。
+
+> **@Component和@Bean的区别是什么？**
+
+- 作用对象不同：@Component 注解作用于**类**，而 @Bean 注解作用于**方法**。
+- @Component 通常是通过**类路径扫描**来自动侦测以及自动装配到 Spring 容器中（可以使用 @ComponentScan 注解定义要扫描的路径从中找出标识了需要装配的类自动装配到 Spring 的 bean 容器中）。@Bean 注解通常是在标有该注解的方法中**定义产生这个 bean**，@Bean告诉了 Spring 这是某个类的示例，当需要用它的时候还给我。
+- @Bean 注解比 Component 注解的自定义性更强，而且很多地方只能通过 **@Bean 注解来注册 bean**。比如引用**第三方库**中的类需要装配到 Spring 容器时，则只能通过 @Bean 来实现。
+
+**(3)** 通过 **@Import** 来**导入组件** （导入组件的 id 为全类名路径）。也可以导入**第三方**组件。
+
+```java
+@Configuration
+@Import(value = {Person.class, Car.class})
+public class MainConfig {
+}
+```
+
+通过 **@Import 的 ImportSeletor 类**实现组件的导入 (导入组件的 id 为全类名路径)  。**自动装配**原理经常使用。
+
+```java
+public class TulingImportSelector implements ImportSelector {
+    // 可以获取导入类的注解信息
+    @Override
+    public String[] selectImports(AnnotationMetadata importingClassMetadata) {
+        return new String[]{"com.tuling.testimport.compent.Dog"};
+    }
+}   
+```
+
+使用这个 TulingImportSelector。
+
+```java
+@Configuration
+@Import(value = {Person.class, Car.class, TulingImportSelector.class})
+public class MainConfig {
+}
+```
+
+通过 @Import 的 **ImportBeanDefinitionRegister** 导入组件 (可以指定 bean 的名称）。Bean **定义注册器**。
+
+```java
+public class TulingBeanDefinitionRegister implements ImportBeanDefinitionRegistrar {
+    @Override
+    public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
+        // 创建一个bean定义对象
+        RootBeanDefinition rootBeanDefinition = new RootBeanDefinition(Cat.class);
+        // 把bean定义对象导入到容器中
+        registry.registerBeanDefinition("cat", rootBeanDefinition);
+    }
+}
+```
+
+```java
+@Configuration
+//@Import(value = {Person.class, Car.class})
+//@Import(value = {Person.class, Car.class, TulingImportSelector.class})
+@Import(value = {Person.class, Car.class, TulingImportSelector.class, TulingBeanDefinitionRegister.class})
+public class MainConfig {
+}
+```
+
+**(4)** 通过实现 **FacotryBean 接口**来实现添加组件。整合**第三方的复杂初始化对象**。典型的是 **SqlSessionFactoryBean** 组件。
+
+```java
+public class CarFactoryBean implements FactoryBean<Car> {
+    // 返回bean的对象
+    @Override
+    public Car getObject() throws Exception {
+        return new Car();
+    } 
+    // 返回bean的类型
+    @Override
+    public Class<?> getObjectType() {
+        return Car.class;
+    } 
+    // 是否为单例
+    @Override
+    public boolean isSingleton() {
+        return true;
+    }
+}
+```
+
+注入这个组件。
+
+```java
+@Configuration
+@ImportResource(locations = {"classpath:beans.xml"})
+public class MainConfig {
+    @Bean
+    public CarFactoryBean carFactoryBean() {
+        return new CarFactoryBean();
+    }
+}
+```
+
+
+
 
 
 #### 属性设置
@@ -324,12 +488,6 @@ public class IoCTest{
 
 所谓依赖注入，就是把底层类作为参数传入上层类，实现上层类对下层类的控制。DI 依赖注入，向类里面属性注入值 ，依赖注入不能单独存在，需要在 IOC 基础上完成操作。
 
-> **IOC与DI的区别**
-
-1. IOC 是**控制反转**，即把**对象创建交给 Spring 配置**。
-2. DI 是**依赖注入**，向**类里面属性注入值**。
-3. 两者的关系，**依赖注入不能单独存在，需要在 IOC 基础上完成操作**。
-
 ##### 2. 依赖注入方式
 
 一般而言，依赖注入可以分为 3 种方式。
@@ -390,7 +548,7 @@ setter 注入利用 JavaBean 规范所定义的 setter 方法来完成注入，�
 
 比如在 Web 工程中，配置的数据源往往是通过服务器（比如Tomcat）去配置的，这个时候可以用 JNDI 的形式通过接口将它注入 Spring IoC 容器中来。
 
-###### (4) 注解注入@Autowired
+###### (4) 注解注入@Autowired与@Resource
 
 现在一般都用这个了吧。
 
@@ -501,6 +659,73 @@ public class Cat implements Animal {...}
 Animal animal = null;
 ```
 
+> **@autowire和@resourse的区别？**
+
+@Resource 和 @Autowired 都是做 bean 的**注入**时使用，其实 @Resource 并不是 Spring 的注解，它的包是 javax.annotation.Resource。 
+
+1、**共同点**
+
+两者都可以写在字段和 setter 方法上。两者如果都写在字段上，那么就不需要再写 setter 方法。
+
+2、**不同点**
+
+**@Resource 的作用相当于 @Autowired，只不过 @Autowired 按照 byType 自动注入。**
+
+**(1) @Autowired**
+
+@Autowired 为 Spring 提供的注解，需要导入包 org.springframework.beans.factory.annotation.Autowired; 只按照 byType 注入。
+
+```java
+public class TestServiceImpl {
+    // 下面两种@Autowired只要使用一种即可
+    @Autowired
+    private UserDao userDao; // 用于字段上
+    
+    @Autowired
+    public void setUserDao(UserDao userDao) { // 用于属性的方法上
+        this.userDao = userDao;
+    }
+}
+```
+
+@Autowired 注解是按照**类型**（byType）装配依赖对象，默认情况下它要求依赖对象必须存在，如果需要允许 null 值，可以设置它的 required 属性为 false。如果想使用**按照名称**（byName）来装配，可以结合 @Qualifier 注解一起使用。如下：
+
+```java
+public class TestServiceImpl {
+    @Autowired
+    @Qualifier("userDao")
+    private UserDao userDao; 
+}
+```
+
+**(2) @Resource**
+
+@Resource 默认按照 **ByName 自动注入**，由 J2EE 提供，需要导入包 javax.annotation.Resource。@Resource 有两个重要的属性：name 和 type，而 Spring 将 @Resource 注解的 name 属性解析为 bean 的名字，而 type 属性则解析为 bean 的类型。所以如果使用 name 属性，则使用 byName 的自动注入策略，而使用 type 属性时则使用 byType 自动注入策略。如果既不制定 name 也不制定 type 属性，这时将通过反射机制使用 byName 自动注入策略。
+
+```javascript
+public class TestServiceImpl {
+    // 下面两种@Resource只要使用一种即可
+    @Resource(name="userDao")
+    private UserDao userDao; // 用于字段上
+    
+    @Resource(name="userDao")
+    public void setUserDao(UserDao userDao) { // 用于属性的setter方法上
+        this.userDao = userDao;
+    }
+}
+```
+
+注：最好是将 @Resource 放在 setter 方法上，因为这样更符合面向对象的思想，通过 set、get 去操作属性，而不是直接去操作属性。
+
+**@Resource 装配顺序：**
+
+1. 如果**同时指定了 name 和 type**，则从 Spring 上下文中找到唯一匹配的 bean 进行装配，找不到则抛出异常。
+
+2. 如果指定了 **name**，则从上下文中查找名称（id）匹配的 bean 进行装配，找不到则抛出异常。
+
+3. 如果指定了 **type**，则从上下文中找到类似匹配的唯一 bean 进行装配，找不到或是找到多个，都会抛出异常。
+4. 如果既没有指定 name，又没有指定 type，则自动按照 byName 方式进行装配；如果没有匹配，则回退为一个原始类型进行匹配，如果匹配则自动装配。
+
 
 
 #### Bean的生命周期
@@ -539,7 +764,31 @@ Bean**定义**、Bean**初始化**、Bean**生存期**、Bean**销毁**。
 
 <img src="../../JavaNotes/H Spring/assets/image-20200528144205341.png" alt="image-20200528144205341" style="zoom:90%;" />
 
-若容器注册了以上各种**接口**，程序那么将会按照以上的流程进行。下面将仔细讲解各接口作用。
+若容器注册了以上各种**接口**，程序那么将会按照以上的流程进行。
+
+再来一张流程图。
+
+ ![1573540627894](assets/1573540627894.png)
+
+【Spring bean 的生命周期】面试的时候的回答：
+
+1. **实例化**一个 Bean，也就是通常说的 new；
+2. 按照 Spring 上下文对实例化的 Bean 进行配置，也就是 **IOC 注入**；
+3. 如果这个 Bean 实现了 **BeanNameAware 接口**，会调用它实现的 **setBeanName**(String beanId) 方法，此处传递的是 Spring 配置文件中 Bean 的 ID；
+4. 如果这个 Bean 实现了 **BeanFactoryAware 接口**，会调用它实现的 **setBeanFactory**()，传递的是 Spring **工厂本身**（可以用这个方法获取到其他 Bean）；
+5. 如果这个 Bean 实现了 **ApplicationContextAware接口**，会调用 **setApplicationContext**(ApplicationContext)方法，传入 **Spring 上下文**，该方式同样可以实现步骤 4，但**比 4 更好**，以为 ApplicationContext 是 BeanFactory 的子接口，有更多的**实现方法**；
+6. 如果这个 Bean 关联了 **BeanPostProcessor 接口**，将会调用 **postProcessBeforeInitialization**(Object obj,  String s)方法，BeanPostProcessor 经常被**用作是 Bean 内容的更改**，并且由于这个是在 Bean 初始化**结束时**调用 After 方法，也可用于**内存或缓存技术**；
+7. 如果这个 Bean 在 Spring 配置文件中配置了 **init-method 属性**会自动调用其配置的初始化方法；
+8. 如果这个 Bean 关联了 **BeanPostProcessor 接口**，将会调用 **postAfterInitialization**(Object obj, String s) 方法；
+
+注意：以上工作完成以后就可以**使用这个 Bean 了**，这是一个 singleton 的 bean，所以一般情况下调用同一个 ID 获取的 Bean 会是在内容**地址相同**的实例。
+
+1. 当 Bean 不再需要时，会经过清理阶段，如果 Bean 实现了 **DisposableBean 接口**，会调用其实现的 **destroy 方法**。
+2. 最后，如果这个 Bean 的 Spring 配置中配置了 **destroy-method 属性**，会自动调用其配置的**销毁方法**。
+
+这 10 个步骤可以作为面试模板，另外这里描述的是应用 Spring 上下文 Bean 的生命周期，如果应用 Spring 的工厂也就是 BeanFactory 的话去掉第 5 步就 Ok 了。
+
+下面将仔细讲解各接口作用。
 
 ##### 3. 各个接口方法分类
 
@@ -731,7 +980,7 @@ public class CustomerBeanPostProcessor implements BeanPostProcessor {
 <bean class="com.giraffe.spring.service.CustomerBeanPostProcessor"/>
 ```
 
-##### 7. 单例与非单例对象生命周期
+##### 7. 单例与非单例对象生命周期例子
 
 其实很多时候并不会真的去实现上面说描述的那些接口，那么下面就除去那些接口，针对 bean 的单例和非单例来描述下 bean 的生命周期：
 
@@ -811,9 +1060,9 @@ this is destory of lifeBean com.bean.LifeBean@573f2bb1
 
 ###### (2) 非单例管理的对象
 
-当`scope=”prototype”`时，容器也会延迟初始化 bean，Spring 读取xml 文件的时候，并不会立刻创建对象，而是在第一次请求该 bean 时才初始化（如调用getBean方法时）。在第一次请求每一个 prototype 的bean 时，Spring容器都会调用其构造器创建这个对象，然后调用`init-method`属性值中所指定的方法。对象销毁的时候，Spring 容器不会帮我们调用任何方法，因为是非单例，这个类型的对象有很多个，Spring容器一旦把这个对象交给你之后，就不再管理这个对象了。
+当 scope="prototype" 时，容器也会**延迟初始化** bean，Spring 读取 xml 文件的时候，并**不会立刻创建对象**，而是在**第一次请求该 bean 时才初始化**（如调用 getBean 方法时）。在第一次请求每一个 prototype 的 bean 时，Spring 容器都会调用其**构造器创建这个对象**，然后调用 **init-method** 属性值中所指定的方法。对象销毁的时候，Spring 容器**不会**帮我们调用任何方法（**不会调用 destroy 方法**），因为是非单例，这个类型的对象有**很多个**，Spring 容器一旦把这个对象交给你之后，就**不再管理**这个对象了。
 
-为了测试prototype bean的生命周期 life.xml 配置如下：
+测试 prototype bean 的生命周期 life.xml 配置如下：
 
 ```xml
 <bean id="life_prototype" class="com.bean.LifeBean" scope="prototype" init-method="init" destroy-method="destory"/>
@@ -825,7 +1074,9 @@ this is destory of lifeBean com.bean.LifeBean@573f2bb1
 public class LifeTest {
     @Test 
     public void test() {
-        AbstractApplicationContext container = new ClassPathXmlApplicationContext("life.xml");
+        // 获取容器
+        AbstractApplicationContext container 
+            = new ClassPathXmlApplicationContext("life.xml");
         LifeBean life1 = (LifeBean)container.getBean("life_singleton");
         System.out.println(life1);
 
@@ -849,18 +1100,135 @@ com.bean.LifeBean@5ae9a829
 this is destory of lifeBean com.bean.LifeBean@573f2bb1
 ```
 
-可以发现，对于作用域为 prototype 的 bean ，其`destroy`方法并没有被调用。**如果 bean 的 scope 设为prototype时，当容器关闭时，`destroy` 方法不会被调用。对于 prototype 作用域的 bean，有一点非常重要，那就是 Spring不能对一个 prototype bean 的整个生命周期负责：容器在初始化、配置、装饰或者是装配完一个prototype实例后，将它交给客户端，随后就对该prototype实例不闻不问了。** 不管何种作用域，容器都会调用所有对象的初始化生命周期回调方法。但对prototype而言，任何配置好的析构生命周期回调方法都将不会被调用。**清除prototype作用域的对象并释放任何prototype bean所持有的昂贵资源，都是客户端代码的职责**（让Spring容器释放被prototype作用域bean占用资源的一种可行方式是，通过使用bean的后置处理器，该处理器持有要被清除的bean的引用）。谈及prototype作用域的bean时，在某些方面你可以将Spring容器的角色看作是Java new操作的替代者，任何迟于该时间点的生命周期事宜都得交由客户端来处理。
+可以发现对于作用域为 **prototype** 的 bean ，其 destroy 方法**并没有被调用**。如果 bean 的 scope 设为 prototype 时，当容器**关闭时，destroy 方法不会被调用**。对于 prototype 作用域的 bean，有一点非常重要，那就是 Spring **不能对一个 prototype bean 的整个生命周期负责**：容器在初始化、配置、装饰或者是装配完一个 prototype 实例后，将它交给客户端，随后就对该 prototype 实例**不闻不问**了。 不管何种作用域，容器都会调用所有对象的初始化生命周期回调方法。但对 prototype 而言，**任何配置好的析构生命周期回调方法都将不会被调用**。清除 prototype 作用域的对象并释放任何 prototype bean 所持有的昂贵资源，都是**客户端代码的职责**（让 Spring 容器释放被 prototype 作用域 bean 占用资源的一种可行方式是，通过使用 bean 的后置处理器，该处理器持有要被清除的 bean 的引用）。谈及 prototype 作用域的 bean 时，在某些方面你可以将 Spring 容器的角色看作**普通 new 操作**的替代者，任何迟于该时间点的生命周期事宜都得交由客户端来处理。
 
-**Spring 容器可以管理 singleton 作用域下 bean 的生命周期，在此作用域下，Spring 能够精确地知道bean何时被创建，何时初始化完成，以及何时被销毁。而对于 prototype 作用域的bean，Spring只负责创建，当容器创建了 bean 的实例后，bean 的实例就交给了客户端的代码管理，Spring容器将不再跟踪其生命周期，并且不会管理那些被配置成prototype作用域的bean的生命周期。**
-
-##### 8. demo
-
-参考这个：https://www.cnblogs.com/zrtqsk/p/3735273.html
+Spring 容器可以管理 **singleton** 作用域下 bean 的生命周期，在此作用域下，Spring 能够**精确地知道 bean 何时被创建，何时初始化完成，以及何时被销毁**。而对于 prototype 作用域的 bean，**Spring 只负责创建**，当容器创建了 bean 的实例后，bean 的实例就交给了客户端的代码管理，Spring 容器将不再跟踪其生命周期，并且不会管理那些被配置成 prototype 作用域的 bean 的生命周期。
 
 
+
+#### BeanFactory与ApplicationContext
+
+##### 1.BeanFactory 
+
+BeanFactory 是 Spring 里面最顶层的接口，提供了最简单的**容器**的功能，只提供了实例化对象和获取对象的功能。它在启动的时候**不会去实例化 Bean**，中有从容器中获取 Bean 的时候才会去实例化；
+
+##### 2.ApplicationContext
+
+ApplicationContext 是 BeanFactory 的**实现类**，除了提供 BeanFactory 所支持的**所有功能**外，ApplicationContext 还有额外的功能：
+
+- **默认初始化所有**的 Singleton 实例，也可以通过配置取消预初始化。
+- 继承 MessageSource，因此支持**国际化**。
+- **资源访问**，比如访问 URL 和文件（ResourceLoader）；
+- **事件机制**，（有继承关系）上下文 ，使得每一个上下文都专注于一个特定的层次，比如应用的 web 层；
+- 同时加载**多个配置文件**。
+- 消息发送、响应机制（ApplicationEventPublisher）；
+- 以**声明式**方式创建并启动 Spring 容器。
+
+由于 ApplicationContext 会**预先初始化所有的 Singleton Bean**，于是在系统创建前期会有较大的**系统开销**，但一旦 ApplicationContext 初始化完成，程序后面获取 Singleton Bean 实例时候将有较好的性能。也可以为 bean 设置 **lazy-init 属性**为 true，即 Spring 容器将不会预先初始化该 bean。
+
+##### 3. 延迟实例化与非延迟实例化的优缺点
+
+**BeanFactory** 延迟实例化的**优点**：应用启动的时候占用资源很少，对资源要求较高的应用，比较有优势。
+
+**缺点**：速度会相对来说慢一些。而且有可能会出现空指针异常的错误，而且通过 bean 工厂创建的 bean 生命周期会简单一些。
+
+**ApplicationContext** 不延迟实例化的**优点**：
+
+- 所有的 Bean 在启动的时候都加载，系统运行的速度快；且能在系统启动的时候，尽早的发现系统中的配置问题。
+- 可以用于 web 场景，在启动的时候就把所有的 Bean 都加载了。
+
+**缺点**：把费时的操作放到系统启动中完成，所有的对象都可以**预加载**，缺点就是消耗服务器的内存。
+
+
+
+#### BeanFactory与FactoryBean
+
+这两个特别像，但是功能却千差万别。
+
+**BeanFactory** 是 Spring **容器的基础实现类**，它是负责**生产和管理** Bean 的一个**工厂**。当然 BeanFactory 只是一个**接口**，它的常用实现有 XmlBeanFactory、**DefaultListableBeanFactory**、**ApplicationContext **等。
+
+![1573545313232](assets/1573545313232.png)
+
+**FactoryBean** 是一个**接口**，具有三个方法如下： 
+
+```java
+public interface FactoryBean<T> {
+ 	// 返回由 FactoryBean 创建的Bean实例
+	T getObject() throws Exception;
+ 	// 返回 FactoryBean 创建Bean的类型
+	Class<?> getObjectType();
+ 	// 返回是否是 singleton
+	boolean isSingleton();
+}
+```
+
+常规的 Bean 都是 Spring **使用 Class 的反射**获取具体**实例**，如果 Bean 的获取过程**比较复杂**，那么常规的 xml 配置需要配置**大量属性值**，这个时候就可以**使用 FactoryBean**，实现这个接口，在其 **getObject() 方法中初始化这个 bean**。 比如装配 MyBatis 中的 **SqlSessionFactoryBean** 就可以用这个。
+
+FactoryBean 使用实例：
+
+```java
+public class StudentFactoryBean implements FactoryBean {
+ 	// 通过getObject方法返回实例
+    @Override
+    public Object getObject() throws Exception {
+        Student student = new Student();
+        student.setAge(22);
+        student.setName("jj");
+        student.setId(10);
+        return student;
+    }
+ 
+    // 对象具体类型
+    @Override
+    public Class<?> getObjectType() {
+        return Student.class;
+    }
+ 
+    // 是否单例
+    @Override
+    public boolean isSingleton() {
+        return true;
+    }
+}
+```
+
+ 在**配置类**中添加该 bean。
+
+```java
+@Configuration
+public class SpringConfiguration {
+    // 添加Bean
+    @Bean
+    public StudentFactoryBean studentFactoryBean(){
+        return new StudentFactoryBean();
+    }
+}
+```
+
+测试
+
+```java
+@Test
+public void testStudentFactoryBean(){
+    AnnotationConfigApplicationContext applicationContext
+        = new AnnotationConfigApplicationContext(SpringConfiguration.class);
+    Student student = (Student) applicationContext.getBean("studentFactoryBean");
+    System.out.println(student);
+}
+// res
+Student(id=10, name=test:jj, age=22)
+```
+
+小结：
+
+- **BeanFactory：工厂类接口，Spring 容器的核心接口，用于实例化 bean 以及管理配置 bean 之间的依赖关系**。
+
+- **FactoryBean：实例化 bean 过程比较复杂时可以考虑使用**。
 
 
 
 #### 参考资料
 
-- [Spring 依赖注入]https://www.cnblogs.com/ooo0/p/10962360.html
+- 【Spring 依赖注入】https://www.cnblogs.com/ooo0/p/10962360.html
+- 【Spring Bean的生命周期】https://www.cnblogs.com/zrtqsk/p/3735273.html
+- 【Spring中bean的作用域与生命周期】https://blog.csdn.net/fuzhongmin05/article/details/73389779
