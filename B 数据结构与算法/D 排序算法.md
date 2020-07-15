@@ -213,6 +213,27 @@ public static void swap(int[] arr, int i, int j) {
 }
 ```
 
+自己写的简便版本：
+
+```java
+private static void insertSort(int[] nums) {
+    // i从1开始，第0个默认有序
+    for (int i = 1; i < nums.length; i++) {
+        // 从i起从右往左开始插入
+        int j = i;
+        // 遇到一个顺序不对的就进行交换
+        while (j > 0 && nums[j] < nums[j - 1]) {
+            swap(nums, j, j - 1);
+            // 移动指针
+            j--;
+        }
+
+    }
+}
+```
+
+
+
 
 
 #### 希尔排序
@@ -344,10 +365,10 @@ public static void mergeSort(int[] array) {
 }
 
 /**
-     * 归并排序 内部排序接口
-     *
-     * @param array 数组
-     */
+ * 归并排序 内部排序接口
+ *
+ * @param array 数组
+ */
 private static void mergeSort(int[] array, int left, int right) {
     // Base case
     if (left == right) return;
@@ -360,13 +381,13 @@ private static void mergeSort(int[] array, int left, int right) {
 }
 
 /**
-     * 使用外排的方式合并两个已经排序的数组
-     *
-     * @param array 整个数组
-     * @param left 左
-     * @param mid 中
-     * @param right 右
-     */
+ * 使用外排的方式合并两个已经排序的数组
+ *
+ * @param array 整个数组
+ * @param left 左
+ * @param mid 中
+ * @param right 右
+ */
 private static void merge(int[] array, int left, int mid, int right) {
     // 定义一个辅助数组用于外排
     int[] temp = new int[right - left + 1];

@@ -1126,6 +1126,12 @@ ApplicationContext 是 BeanFactory 的**实现类**，除了提供 BeanFactory �
 
 由于 ApplicationContext 会**预先初始化所有的 Singleton Bean**，于是在系统创建前期会有较大的**系统开销**，但一旦 ApplicationContext 初始化完成，程序后面获取 Singleton Bean 实例时候将有较好的性能。也可以为 bean 设置 **lazy-init 属性**为 true，即 Spring 容器将不会预先初始化该 bean。
 
+ApplicationContext的三个实现类：
+
+- **ClassPathXmlApplication**：把上下文文件当成类路径资源。
+- **FileSystemXmlApplication**：从文件系统中的 XML 文件载入上下文定义信息。
+- **XmlWebApplicationContext**：从Web系统中的XML文件载入上下文定义信息。
+
 ##### 3. 延迟实例化与非延迟实例化的优缺点
 
 **BeanFactory** 延迟实例化的**优点**：应用启动的时候占用资源很少，对资源要求较高的应用，比较有优势。
@@ -1162,7 +1168,7 @@ public interface FactoryBean<T> {
 }
 ```
 
-常规的 Bean 都是 Spring **使用 Class 的反射**获取具体**实例**，如果 Bean 的获取过程**比较复杂**，那么常规的 xml 配置需要配置**大量属性值**，这个时候就可以**使用 FactoryBean**，实现这个接口，在其 **getObject() 方法中初始化这个 bean**。 比如装配 MyBatis 中的 **SqlSessionFactoryBean** 就可以用这个。
+常规的 Bean 都是 Spring **使用 Class 的反射**获取具体**实例**，如果 Bean 的获取过程**比较复杂**，那么常规的 xml 配置需要配置**大量属性值**，这个时候就可以**使用 FactoryBean**，实现这个接口，在其 **getObject() 方法中初始化这个 bean**。 比如装配 MyBatis 中的 **SqlSessionFactoryBean** 或者**数据库连接**对象就可以用这个。
 
 FactoryBean 使用实例：
 
@@ -1224,6 +1230,322 @@ Student(id=10, name=test:jj, age=22)
 - **BeanFactory：工厂类接口，Spring 容器的核心接口，用于实例化 bean 以及管理配置 bean 之间的依赖关系**。
 
 - **FactoryBean：实例化 bean 过程比较复杂时可以考虑使用**。
+
+
+
+#### Bean相关
+
+##### 1. id和name
+
+每个 Bean 在 Spring 容器中都有一个**唯一的名字**（beanName）和 0 个或**多个别名**（aliases）。从 Spring 容器中获取 Bean 的时候，可以根据 **beanName**，也可以通过**别名**。
+
+```java
+beanFactory.getBean("beanName or alias");
+```
+
+在配置 \<bean /> 的过程中，可以配置 id 和 name，看几个例子就知道是怎么回事了。
+
+```xml
+<bean id="messageService" name="m1, m2, m3" class="com.javadoop.example.MessageServiceImpl">
+```
+
+以上配置的结果就是：beanName 为 **messageService**，别名有 3 个，分别为 m1、m2、m3。
+
+```xml
+<bean name="m1, m2, m3" class="com.javadoop.example.MessageServiceImpl" />
+```
+
+以上配置的结果就是：beanName 为 m1，别名有 2 个，分别为 m2、m3。
+
+```xml
+<bean class="com.javadoop.example.MessageServiceImpl">
+```
+
+beanName 为：com.javadoop.example.MessageServiceImpl#0，
+
+别名 1 个，为： com.javadoop.example.MessageServiceImpl。
+
+```xml
+<bean id="messageService" class="com.javadoop.example.MessageServiceImpl">
+```
+
+以上配置的结果就是：beanName 为 messageService，没有别名。
+
+##### 2. 配置是否允许Bean覆盖、是否允许循环依赖
+
+默认情况下，**allowBeanDefinitionOverriding** 属性为 null。如果在同一配置文件中 Bean id 或 name 重复了，会抛错，但是如果不是同一配置文件中，会发生覆盖。
+
+可是有些时候希望在系统启动的过程中就**严格杜绝发生 Bean 覆盖**，因为万一出现这种情况，会增加排查问题的成本。
+
+**循环依赖**说的是 A 依赖 B，而 B 又依赖 A。或者是 A 依赖 B，B 依赖 C，而 C 却依赖 A。默认 **allowCircularReferences** 也是 null。
+
+它们两个属性是一起出现的，必然可以在同一个地方一起进行配置。
+
+##### 3. 初始化Bean的回调
+
+有以下四种方案：
+
+```xml
+<bean id="exampleInitBean" class="examples.ExampleBean" init-method="init"/>
+```
+
+````java
+public class AnotherExampleBean implements InitializingBean {
+
+    public void afterPropertiesSet() {
+        // do some initialization work
+    }
+}
+````
+
+```java
+@Bean(initMethod = "init")
+public Foo foo() {
+    return new Foo();
+}
+```
+
+```java
+@PostConstruct
+public void init() {
+
+}
+```
+
+##### 4. 销毁Bean的回调
+
+```xml
+<bean id="exampleInitBean" class="examples.ExampleBean" destroy-method="cleanup"/>
+```
+
+```java
+public class AnotherExampleBean implements DisposableBean {
+
+    public void destroy() {
+        // do some destruction work (like releasing pooled connections)
+    }
+}
+```
+
+```java
+@Bean(destroyMethod = "cleanup")
+public Bar bar() {
+    return new Bar();
+}
+```
+
+```java
+@PreDestroy
+public void cleanup() {
+
+}
+```
+
+##### 7. ConversionService
+
+ConversionService 最有用的场景就是用来将**前端传过来的参数和后端的 Controller 方法上的参数进行绑定**。
+
+像前端传过来的字符串、整数要转换为后端的 **String、Integer** 很容易，但是如果 Controller 方法需要的是一个**枚举值**，或者是 **Date** 这些非基础类型（含基础类型包装类）值的时候，就可以考虑**采用 ConversionService 来进行转换**。
+
+```xml
+<bean id="conversionService"
+      class="org.springframework.context.support.ConversionServiceFactoryBean">
+    <property name="converters">
+        <list>
+            <bean class="com.javadoop.learning.utils.StringToEnumConverterFactory"/>
+        </list>
+    </property>
+</bean>
+```
+
+ConversionService 接口很简单，所以要**自定义一个 convert** 的话也很简单。
+
+下面再说一个实现这种转换很简单的方式，那就是实现 **Converter 接口**。看一个很简单的例子。
+
+```java
+public class StringToDateConverter implements Converter<String, Date> {
+    @Override
+    public Date convert(String source) {
+        try {
+            return DateUtils.parseDate(source, "yyyy-MM-dd", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd HH:mm", "HH:mm:ss", "HH:mm");
+        } catch (ParseException e) {
+            return null;
+        }
+    }
+}
+```
+
+只要**注册这个 Bean** 就可以了。这样前端往后端传的时间描述字符串就很容易绑定成 Date 类型了，不需要其他任何操作。
+
+##### 8. Bean继承
+
+在初始化 Bean 的地方，说过了这个：
+
+```java
+RootBeanDefinition bd = getMergedLocalBeanDefinition(beanName);
+```
+
+这里涉及到的就是  \<bean parent="" />  中的 **parent 属性**，看看 Spring 中是用这个来干什么的。
+
+首先要明白这里的继承和 Java 语法中的继承**没有任何关系**，不过思路是相通的。child bean 会继承 parent bean 的所有配置，也可以覆盖一些配置，当然也可以新增额外的配置。
+
+Spring 中提供了继承自 AbstractBeanDefinition 的 **ChildBeanDefinition** 来表示 child bean。
+
+看如下一个例子：
+
+```xml
+<bean id="inheritedTestBean" abstract="true" class="org.springframework.beans.TestBean">
+    <property name="name" value="parent"/>
+    <property name="age" value="1"/>
+</bean>
+
+<bean id="inheritsWithDifferentClass" class="org.springframework.beans.DerivedTestBean"
+      parent="inheritedTestBean" init-method="initialize">
+
+    <property name="name" value="override"/>
+</bean>
+```
+
+parent bean 设置了 `abstract="true"` 所以它不会被实例化，child bean 继承了 parent bean 的两个属性，但是对 name 属性进行了覆写。child bean 会继承 scope、构造器参数值、属性值、init-method、destroy-method 等等。
+
+不是说 parent bean 中的 abstract = true 在这里是必须的，只是说如果加上了以后 Spring 在实例化 singleton beans 的时候会忽略这个 bean。
+
+比如下面这个极端 parent bean，它没有指定 class，所以毫无疑问这个 bean 的作用就是用来充当模板用的 parent bean，此处就必须加上 abstract = true。
+
+```xml
+<bean id="inheritedTestBeanWithoutClass" abstract="true">
+    <property name="name" value="parent"/>
+    <property name="age" value="1"/>
+</bean>
+```
+
+##### 9. 方法注入
+
+一般应用中大多数的 Bean **都是 singleton** 的。singleton 依赖 singleton，或者 prototype 依赖 prototype 都很好解决，**直接设置属性依赖**就可以了。
+
+但是如果**是 singleton 依赖 prototype** 呢？这个时候不能用属性依赖，因为如果用属性依赖的话，每次其实拿到的还是第一次初始化时候的 bean。
+
+一种解决方案就是**不要用属性依赖**，每次**获取依赖的 bean 的时候从 BeanFactory 中取**。这个也是大家最常用的方式了。另一种解决方案就是这里要介绍的通过使用 Lookup method。
+
+###### (1) lookup-method
+
+来看一下 Spring Reference 中提供的一个例子：
+
+```java
+package fiona.apple;
+public abstract class CommandManager {
+
+    public Object process(Object commandState) {
+        // grab a new instance of the appropriate Command interface
+        Command command = createCommand();
+        // set the state on the (hopefully brand new) Command instance
+        command.setState(commandState);
+        return command.execute();
+    }
+
+    // okay... but where is the implementation of this method?
+    protected abstract Command createCommand();
+}
+```
+
+xml 配置  **\<lookup-method />：**
+
+```xml
+<!-- a stateful bean deployed as a prototype (non-singleton) -->
+<bean id="myCommand" class="fiona.apple.AsyncCommand" scope="prototype">
+    <!-- inject dependencies here as required -->
+</bean>
+
+<!-- commandProcessor uses statefulCommandHelper -->
+<bean id="commandManager" class="fiona.apple.CommandManager">
+    <lookup-method name="createCommand" bean="myCommand"/>
+</bean>
+```
+
+Spring 采用 **CGLIB 生成字节码**的方式来生成一个**子类**。定义的类不能定义为 final class，抽象方法上也不能加 final。
+
+lookup-method 上的配置也可以采用**注解**来完成：
+
+```java
+public abstract class CommandManager {
+
+    public Object process(Object commandState) {
+        MyCommand command = createCommand();
+        command.setState(commandState);
+        return command.execute();
+    }
+
+    @Lookup("myCommand")
+    protected abstract Command createCommand();
+}
+```
+
+###### (2) replaced-method
+
+记住它的功能，就是**替换掉 bean 中的一些方法**。
+
+```java
+public class MyValueCalculator {
+
+    public String computeValue(String input) {
+        // some real code...
+    }
+
+    // some other methods...
+}
+```
+
+方法覆写，注意要实现 **MethodReplacer** 接口：
+
+```java
+public class ReplacementComputeValue implements org.springframework.beans.factory.support.MethodReplacer {
+
+    public Object reimplement(Object o, Method m, Object[] args) throws Throwable {
+        // get the input value, work with it, and return a computed result
+        String input = (String) args[0];
+        //...
+        return ...;
+    }
+}
+```
+
+配置也很简单：
+
+```xml
+<bean id="myValueCalculator" class="x.y.z.MyValueCalculator">
+    <!-- 定义 computeValue 这个方法要被替换掉 -->
+    <replaced-method name="computeValue" replacer="replacementComputeValue">
+        <arg-type>String</arg-type>
+    </replaced-method>
+</bean>
+
+<bean id="replacementComputeValue" class="a.b.c.ReplacementComputeValue"/>
+```
+
+##### 10. BeanPostProcessor
+
+应该说 **BeanPostProcessor** 概念在 Spring 中也是比较重要的。看下接口定义：
+
+```java
+public interface BeanPostProcessor {
+	// Before
+    Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException;
+	// After
+    Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException;
+}
+```
+
+看这个接口中的两个方法名字大体上可以猜测 bean 在**初始化之前**会执行 **postProcessBeforeInitialization** 这个方法，初始化**完成之后**会执行 **postProcessAfterInitialization** 这个方法。但是这么理解是非常片面的。
+
+首先要明白除了自己定义的 **BeanPostProcessor** 实现外，Spring 容器也在启动时**自动给加了几个**。如在获取 BeanFactory 的 **obtainFactory**() 方法结束后的 **prepareBeanFactory**(factory)，大家仔细看会发现，Spring 往容器中添加了这**两个 BeanPostProcessor：ApplicationContextAwareProcessor、ApplicationListenerDetector**。
+
+回到这个接口本身，第一个方法接受的第一个参数是 bean 实例，第二个参数是 bean 的名字，重点在返回值将会作为**新的 bean 实例**，所以，没事的话这里不能随便返回个 null。所以这里可以对一些我们**想要修饰的 bean 实例做一些事情**。但是对于 Spring 框架来说，它会决定是不是要在这个方法中返回 bean 实例的代理，这样就有更大的想象空间了。
+
+如果自己定义一个 bean 实现 BeanPostProcessor 的话，它的执行时机是什么时候？如果仔细看了代码分析的话，其实很容易知道了，**在 bean 实例化完成、属性注入完成之后，会执行回调方法**，具体请参见类 AbstractAutowireCapableBeanFactory#initBean 方法。
+
+首先会回调几个**实现了 Aware 接口的 bean**，然后就**开始回调 BeanPostProcessor 的 postProcessBeforeInitialization 方法，之后是回调 init-method，然后再回调 BeanPostProcessor 的 postProcessAfterInitialization 方法**。
+
+
 
 
 

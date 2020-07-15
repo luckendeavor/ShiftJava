@@ -613,6 +613,8 @@ Class B {
 @Transactional(rollbackFor = TestException.class)
 ```
 
+Exception 分为**运行时异常** RuntimeException 和**非运行时异常**。在 @Transactional 注解中如果不配置 rollbackFor 属性，那么事物只会在**遇到 RuntimeException 的时候才会回滚**，加上 **rollbackFor=Exception.class**，可以让事务在遇到**非运行时异常时**也回滚。
+
 ##### 4. 事务只读属性
 
 对于**只有读取数据查询**的事务，可以**指定事务类型为 readonly，即只读事务**。只读事务不涉及数据的修改，数据库会提供一些优化手段，适合用在有**多条数据库查询**操作的方法中。
@@ -643,6 +645,13 @@ public interface TransactionDefinition {
 ##### 5. 事务超时属性
 
 事务超时指一个事务所允许执行的最长时间，如果超过该时间限制但事务还没有完成，则自动回滚事务。在 TransactionDefinition 中以 int 的值来表示超时时间，其单位是**秒**，默认值为 -1，即不超时。
+
+更多关于关于 Spring 事务的内容请参考：
+
+1. [可能是最漂亮的 Spring 事务管理详解](https://mp.weixin.qq.com/s?__biz=Mzg2OTA0Njk0OA==&mid=2247484943&idx=1&sn=46b9082af4ec223137df7d1c8303ca24&chksm=cea249c4f9d5c0d2b8212a17252cbfb74e5fbe5488b76d829827421c53332326d1ec360f5d63&token=1082669959&lang=zh_CN#rd)
+2. [一口气说出6种@Transactional注解失效场景](https://mp.weixin.qq.com/s?__biz=Mzg2OTA0Njk0OA==&mid=2247486483&idx=2&sn=77be488e206186803531ea5d7164ec53&chksm=cea243d8f9d5cacecaa5c5daae4cde4c697b9b5b21f96dfc6cce428cfcb62b88b3970c26b9c2&token=816772476&lang=zh_CN#rd)
+
+
 
 
 

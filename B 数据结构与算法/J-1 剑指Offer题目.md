@@ -37,7 +37,7 @@ Output:
 
 以 (2, 3, 1, 0, 2, 5) 为例，**遍历**到位置 4 时，该位置上的数为 2，但是第 2 个位置上已经有一个 2 的值了，因此可以知道 2 重复：
 
-<div align="center"> <img src="assets/49d2adc1-b28a-44bf-babb-d44993f4a2e3.gif" width="250px"> </div><br>
+<img src="assets/49d2adc1-b28a-44bf-babb-d44993f4a2e3.gif" alt="image-20200618154803867" style="zoom: 67%;" />
 
 ```java
 public int findRepeatNumber(int[] nums) {
@@ -95,7 +95,7 @@ Given target = 20, return false.
 
 该二维数组中的一个数，**小于它的数一定在其左边**，大于它的数一定在**其下边**。因此，从**右上角开始查找**，就可以根据 target 和当前元素的大小关系来缩小查找区间，当前元素的查找区间为左下角的所有元素 。
 
-<div align="center"> <img src="assets/0ad9f7ba-f408-4999-a77a-9b73562c9088.gif" width="200px"> </div><br>
+<img src="assets/0ad9f7ba-f408-4999-a77a-9b73562c9088.gif" alt="image-20200618154803867" style="zoom: 67%;" />
 
 ```java
 public boolean Find(int target, int[][] matrix) {
@@ -144,7 +144,7 @@ Output:
 
 **从后向前遍历**是为了在改变 P2 所指向的内容时，不会影响到 P1 遍历原来字符串的内容。
 
-<div align="center"> <img src="assets/6980aef0-debe-4b4b-8da5-8b1befbc1408.gif" width="230px"> </div><br>
+<img src="assets/6980aef0-debe-4b4b-8da5-8b1befbc1408.gif" alt="image-20200618154803867" style="zoom: 67%;" />
 
 emmm，这里用一个 **StringBuilder** 来进行最终答案的记录。
 
@@ -182,7 +182,7 @@ public String replaceSpace(StringBuffer str) {
 
 从**尾到头**反过来打印出每个结点的值。
 
-<img src="../../JavaNotes/B 数据结构与算法/assets/1563521710781.png" alt="1563521710781" style="zoom:67%;" />
+<img src="assets/1563521710781.png" alt="1563521710781" style="zoom:67%;" />
 
 ##### 2. 解题思路
 
@@ -214,7 +214,7 @@ public ArrayList<Integer> printListFromTailToHead(ListNode listNode) {
 
 这个图不错啊。就是**整一个 dummy 结点**，然后把新的结点依次插入到 dummy 与头结点之间。**面试靠这个**就行了，力扣试了一下双百。
 
-<div align="center"> <img src="assets/0dae7e93-cfd1-4bd3-97e8-325b032b716f.gif" width="370px"> </div><br>
+<img src="assets/0dae7e93-cfd1-4bd3-97e8-325b032b716f.gif" alt="image-20200618154803867" style="zoom: 67%;" />
 
 ```java
 public ListNode reverseList(ListNode head) {
@@ -249,7 +249,7 @@ public ListNode reverseList(ListNode head) {
 
 栈具有**后进先出**的特点，在遍历链表时将值按顺序放入栈中，最后**出栈**的顺序即为**逆序**。但是使用了**额外**空间。
 
-<div align="center"> <img src="assets/9d1deeba-4ae1-41dc-98f4-47d85b9831bc.gif" width="300px"> </div><br>
+<img src="assets/9d1deeba-4ae1-41dc-98f4-47d85b9831bc.gif" alt="image-20200618154803867" style="zoom: 67%;" />
 
 ```java
 public ArrayList<Integer> printListFromTailToHead(ListNode listNode) {
@@ -275,7 +275,7 @@ public ArrayList<Integer> printListFromTailToHead(ListNode listNode) {
 
 根据二叉树的**前序遍历和中序遍历的结果**，**重建**出该二叉树。假设输入的前序遍历和中序遍历的结果中都**不含重复**的数字。
 
-<img src="../../JavaNotes/B 数据结构与算法/assets/1563521777675.png" alt="1563521777675" style="zoom:56%;" />
+<img src="assets/1563521777675.png" alt="1563521777675" style="zoom:56%;" />
 
 ##### 2. 解题思路
 
@@ -283,7 +283,7 @@ public ArrayList<Integer> printListFromTailToHead(ListNode listNode) {
 
 记住这个图，对一些**选择题**都是OK的。
 
-<div align="center"> <img src="assets/c269e362-1128-4212-9cf3-d4c12b363b2f.gif" width="330px"> </div><br>
+<img src="assets/c269e362-1128-4212-9cf3-d4c12b363b2f.gif" alt="image-20200618154803867" style="zoom: 67%;" />
 
 ```java
 // 缓存中序遍历数组每个值对应的索引
@@ -343,11 +343,11 @@ public class TreeLinkNode {
 
 ① 如果一个节点的**右子树不为空**，那么该节点的**下一个节点是右子树的最左节点**；
 
-<div align="center"> <img src="assets/b0611f89-1e5f-4494-a795-3544bf65042a.gif" width="220px"/> </div><br>
+<img src="assets/b0611f89-1e5f-4494-a795-3544bf65042a.gif" alt="image-20200618154803867" style="zoom: 67%;" />
 
 ② 否则，**向上找第一个==左链接==指向的树包含该节点的祖先节点**。
 
-<div align="center"> <img src="assets/95080fae-de40-463d-a76e-783a0c677fec.gif" width="200px"/> </div><br>
+<img src="assets/95080fae-de40-463d-a76e-783a0c677fec.gif" alt="image-20200618154803867" style="zoom: 67%;" />
 
 ```java
 public TreeLinkNode GetNext(TreeLinkNode pNode) {
@@ -391,7 +391,7 @@ public TreeLinkNode GetNext(TreeLinkNode pNode) {
 
 **in 栈**用来处理**入栈（push）**操作，**out 栈**用来处理**出栈（pop）**操作。一个元素进入 in 栈之后，**出栈的顺序被反转**。当**元素要出栈时，需要先进入 out 栈**，此时元素出栈顺序再一次被反转，因此出栈顺序就和最开始入栈顺序是相同的，先进入的元素先退出，这就是队列的顺序。
 
-<div align="center"> <img src="assets/3ea280b5-be7d-471b-ac76-ff020384357c.gif" width="350"/> </div><br>
+<img src="assets/3ea280b5-be7d-471b-ac76-ff020384357c.gif" alt="image-20200618154803867" style="zoom: 67%;" />
 
 **这里一个栈用于 push，一个栈用于 pop，当 pop 时，如果 pop 栈为空，则把 push 栈的全部元素搬到 pop 中之后再 pop，如果是 push 操作，则一直往 push 栈压入即可。**
 
@@ -499,7 +499,7 @@ public class Solution {
 
 可以用 2 \* 1 的小矩形**横着或者竖着**去覆盖更大的矩形。请问用 n 个 2\*1 的小矩形无重叠地覆盖一个 **2\*n 的大矩形**，总共有**多少种方法**？
 
-<div align="center"> <img src="assets/b903fda8-07d0-46a7-91a7-e803892895cf.gif" width="100px"> </div><br>
+<img src="assets/b903fda8-07d0-46a7-91a7-e803892895cf.gif" alt="image-20200618154803867" style="zoom: 67%;" />
 
 ##### 解题思路
 
@@ -1508,18 +1508,14 @@ public ListNode Merge2(ListNode list1, ListNode list2) {
 
 ```java
 public boolean HasSubtree(TreeNode root1, TreeNode root2) {
-    if (root1 == null || root2 == null)
-        return false;
+    if (root1 == null || root2 == null) return false;
     return isSubtreeWithRoot(root1, root2) || HasSubtree(root1.left, root2) || HasSubtree(root1.right, root2);
 }
 
 private boolean isSubtreeWithRoot(TreeNode root1, TreeNode root2) {
-    if (root2 == null)
-        return true;
-    if (root1 == null)
-        return false;
-    if (root1.val != root2.val)
-        return false;
+    if (root2 == null) return true;
+    if (root1 == null) return false;
+    if (root1.val != root2.val) return false;
     return isSubtreeWithRoot(root1.left, root2.left) && isSubtreeWithRoot(root1.right, root2.right);
 }
 ```
@@ -2856,7 +2852,7 @@ private void merge(int[] nums, int l, int m, int h) {
 
 ##### 题目描述
 
-<img src="assets/1563522765280.png" alt="1563522765280" style="zoom:60%;" />
+<img src="assets/1563522765280.png" alt="1563522765280" style="zoom:56%;" />
 
 ##### 解题思路
 
@@ -2866,7 +2862,7 @@ private void merge(int[] nums, int l, int m, int h) {
 
 **当访问链表 A 的指针访问到链表尾部时**，**令它从链表 B 的头部重新开始访问链表 B**；同样地，当访问链表 B 的指针访问到链表尾部时，令它从链表 A 的头部重新开始访问链表 A。**这样就能控制访问 A 和 B 两个链表的指针能同时访问到交点。**
 
-这个解法在两个指针都指向另外一个链表后，它们已经在“**同一起跑线**”，所以两个指针同时移动一位，当他们为同一结点时 while 循环结束，返回交结点。
+这个解法在两个指针**都指向另外一个链表后**，它们已经在“**同一起跑线**”，所以两个指针同时移动一位，当他们为同一结点时 while 循环结束，返回交结点。
 
 ```java
 public ListNode FindFirstCommonNode(ListNode head1, ListNode head2) {

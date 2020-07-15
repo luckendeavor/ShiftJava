@@ -41,6 +41,8 @@ Spring AOP 的**流程约定**如下：
 
 ##### 1. Spring AOP和AspectJ AOP
 
+实现 AOP 有 Spring 自带的 Spring AOP 以及集成的 AspectJ AOP。
+
 **Spring AOP 属于==运行时==增强，而 AspectJ 是==编译时==增强。** Spring AOP **基于代理**(Proxying)，而 AspectJ **基于字节码**操作(Bytecode Manipulation)。Spring AOP 是纯 Java 实现，在运行期对目标对象进行代理，织入增强代码。AspectJ 第三方开源技术，Spring 已经整合 AspectJ，提供对 AspectJ 注解的支持，开发 AOP 程序 更加容易（企业主流）。
 
 Spring AOP 已经**集成了 AspectJ**  ，AspectJ  应该算的上是 Java 生态系统中最**完整**的 AOP 框架了。AspectJ  相比于 Spring AOP 功能**更加强大**，但是 Spring AOP 相对来说更简单，

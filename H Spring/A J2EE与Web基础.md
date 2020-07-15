@@ -29,14 +29,14 @@ JSP 中的四种作用域包括 page、request、session 和 application，具�
 
 JSP 有 9 个内置对象：
 
-- request：封装客户端的请求，其中包含来自GET或POST请求的参数；
+- request：封装客户端的请求，其中包含来自 GET 或 POST 请求的参数；
 - response：封装服务器对客户端的响应；
 - pageContext：通过该对象可以获取其他对象；
 - session：封装用户会话的对象；
 - application：封装服务器运行环境的对象；
 - out：输出服务器响应的输出流对象；
-- config：Web应用的配置对象；
-- page：JSP页面本身（相当于Java程序中的this）；
+- config：Web 应用的配置对象；
+- page：JSP 页面本身（相当于 Java 程序中的 this）；
 - exception：封装页面抛出异常的对象。
 
 
@@ -44,6 +44,19 @@ JSP 有 9 个内置对象：
 #### Servlet
 
 ##### 1. 概述
+
+Servlet 是在**服务器**上运行的小程序。一个 servlet 就是一个 Java 类，并且可以通过 "请求—响应" 编程模式来访问的这个驻留在服务器内存里的 servlet 程序。  
+
+类的继承关系如下：
+
+<img src="assets/1535532891036.png" style="zoom:56%;" />
+
+Servlet 三种**实现方式**：
+
+- 实现 javax.servlet.**Servlet** 接口。
+
+- 继承 javax.servlet.**GenericServlet** 类。
+- 继承 javax.servlet.http.**HttpServlet** 类。通常会去继承 HttpServlet 类来完成 Servlet。
 
 在 JavaWeb 程序中，Servlet 主要负责**接收用户请求 HttpServletRequest**，在 **doGet()，doPost()** 中做相应的处理，并将回应 **HttpServletResponse** 反馈给用户。Servlet 可以设置初始化参数，供 Servlet 内部使用。一个 Servlet 类只会有**一个实例**，在它初始化时调用 **init**() 方法，销毁时调用 **destroy**() 方法。Servlet 需要在 **web.xml** 中配置，一个 Servlet 可以设置多个 URL 访问。**Servlet 不是线程安全**，因此要谨慎使用类变量。
 
@@ -75,11 +88,46 @@ Servlet 生命周期如下：
 
 init 方法和 destroy 方法**只会执行一次**，service 方法客户端每次请求 Servlet 都会执行。Servlet 中有时会用到一些需要初始化与销毁的资源，因此可以把初始化资源的代码放入 init 方法中，销毁资源的代码放入 destroy 方法中，这样就不需要每次处理客户端的请求都要初始化与销毁资源。
 
+- Servlet 类由自己编写，但**对象由服务器**来创建，并由服务器来调用相应的方法。　
+- 服务器**启动**时 ( web.xml 中配置 load-on-startup=1，默认为 0 ) 或者**第一次请求该 servlet** 时，就会**初始化**一个 Servlet 对象，也就是**会执行初始化方法 init**(ServletConfig conf)。
+- 该 servlet 对象去处理所有**客户端请求**，在 **service**(ServletRequest req，ServletResponse res) 方法中执行。
+- 最后服务器**关闭**时，才会销毁这个 servlet 对象，执行 **destroy**() 方法。
+
+<img src="assets/1535535812505.png" style="zoom:42%;" />
+
 ##### 4. 线程安全性
 
 **Servlet 不是线程安全的，多线程并发的读写会导致数据不同步的问题。** 
 
 解决的办法是**尽量不要定义 name 属性**，而是要把 name 变量分别定义在 doGet() 和 doPost() 方法内。虽然使用synchronized(name){} 语句块可以解决问题，但是会造成线程的等待。 注意：**多线程的并发的读写 Servlet 类属性会导致数据不同步**。但是如果只是并发地读取属性而不写入，则不存在数据不同步的问题。因此 Servlet 里的**只读属性**最好定义为 final 类型的。
+
+##### 5. Tomcat和Servlet的联系
+
+Tomcat 是 Web 应用服务器，是一个 Servlet/JSP **容器**。Tomcat 作为 **Servlet 容器**，负责处理客户请求，把请求传送给 Servlet，并将 Servlet 的**响应传送回给客户**。而 Servlet 是一种运行在支持 Java 语言的服务器上的组件。Servlet 最常见的用途是扩展 Java Web 服务器功能，提供非常安全的，可移植的，易于使用的 CGI 替代品。
+
+从 HTTP 协议中的请求和响应可以得知，浏览器发出的请求是一个**请求文本**，而浏览器接收到的也应该是一个响应文本。但是在下面这个图中，并不知道是如何转变的，只知道浏览器发送过来的请求也就是 request，我们响应回去的就用 response。忽略了其中的细节，现在就来探究一下。
+
+<img src="assets/servlet-tomcat.png" alt="servlet-tomcat" style="zoom:45%;" />
+
+(1) Tomcat 将 HTTP 请求文本接收**并解析**，然后封装成 **HttpServletRequest** 类型的 **request 对象**，所有的 HTTP **头数据**读可以通过 request 对象调用对应的方法查询到。
+
+(2) Tomcat 同时会要**响应的信息封装为 HttpServletResponse 类型的 response 对象**，通过设置 response 属性就可以控制要输出到浏览器的内容，然后将 response 交给 Tomcat，Tomcat 就会将其变成响应文本的格式发送给浏览器。
+
+Java Servlet API 是 **Servlet 容器(Tomcat) 和 servlet 之间的接口**，它定义了 serlvet 的各种方法，还定义了 Servlet 容器传送给 Servlet 的对象类，其中最重要的就是 **ServletRequest** 和 **ServletResponse**。所以在编写 servlet 时，需要实现 Servlet 接口，按照其规范进行操作。
+
+##### 6. Tomcat装载Servlet的三种情况
+
+(1) Servlet 容器**启动时**自动装载某些 Servlet，实现它只需要在 web.xml 文件中的 `<servlet></servlet>` 之间添加以下代码：
+
+```xml
+<load-on-startup>1</load-on-startup>
+```
+
+其中，数字越小表示优先级越高。例如在 web.xml 中设置 TestServlet2 的优先级为 1，而 TestServlet1 的优先级为 2，启动和关闭 Tomcat：优先级高的先启动也先关闭。　　
+
+(2) 客户端首次向某个 Servlet **发送请求**。
+
+(3) Servlet 类被**修改**后，Tomcat 容器会重新装载 Servlet。
 
 
 
