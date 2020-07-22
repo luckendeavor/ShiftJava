@@ -2,7 +2,7 @@
 
 ### MySQL架构篇
 
-#### 分区与切分
+#### 切分与分库分表
 
 ##### 1. 垂直切分
 
@@ -59,15 +59,216 @@
 
 ##### 5. 分布式ID
 
-因为要是分成多个表之后，每个表都是从 1 开始累加，这样是不对的，需要一个**全局唯一的 id** 来支持。
+因为要是分成多个表之后，每个表都是从 1 开始累加，这样是不对的，需要一个**全局唯一的 id** 来支持。生成全局 ID 有下面这几种方式：
 
-生成全局 ID 有下面这几种方式：
+###### (1) UUID
 
-- **UUID**：不适合作为主键，因为太长了，并且无序不可读，查询效率低。比较适合用于生成唯一的名字的标示比如文件的名字。
-- **数据库自增 ID** : 两台数据库分别**设置不同步长**，生成不重复 ID 的策略来实现高可用。这种方式生成的 ID 有序，但是需要**独立部署数据库实例**，成本高，还会有性能瓶颈。
-- **利用 Redis 生成 ID :** 性能比较好，灵活方便，不依赖于数据库。但是引入了新的组件造成系统更加复杂，可用性降低，编码更加复杂，增加了系统成本。
-- **Twitter 的 snowflake 算法** ：**雪花算法**。Github 地址：https://github.com/twitter-archive/snowflake。
-- **美团的 Leaf 分布式 ID 生成系统** ：Leaf 是美团开源的分布式 ID 生成器，能保证全局唯一性、趋势递增、单调递增、信息安全，里面也提到了几种分布式方案的对比，但也需要依赖关系数据库、**Zookeeper** 等中间件。参考美团技术团队的一篇文章：https://tech.meituan.com/2017/04/21/mt-leaf.html 。
+**UUID**：不适合作为主键，因为太长了，并且无序不可读，查询效率低。比较适合用于生成唯一的名字的标示比如文件的名字。UUID 太长了、占用空间大，**作为主键性能太差**了；更重要的是，UUID 不具有有序性，会导致 B+ 树索引在写的时候有过多的随机写操作（连续的 ID 可以产生部分顺序写），还有，由于在写的时候不能产生有顺序的 append 操作，而需要进行 insert 操作，将会读取整个 B+ 树节点到内存，在插入这条记录后会将整个节点写回磁盘，这种操作在记录占用空间比较大的情况下，性能下降明显。
+
+###### (2)数据库自增ID
+
+两台数据库分别**设置不同步长**，生成不重复 ID 的策略来实现高可用。这种方式生成的 ID 有序，但是需要**独立部署数据库实例**，成本高，还会有性能瓶颈。
+
+###### (3) 利用Redis生成ID
+
+性能比较好，灵活方便，不依赖于数据库。但是引入了新的组件造成系统更加复杂，可用性降低，编码更加复杂，增加了系统成本。
+
+###### (4) Leaf分布式ID生成系统
+
+Leaf 是美团开源的分布式 ID 生成器，能保证全局唯一性、趋势递增、单调递增、信息安全，里面也提到了几种分布式方案的对比，但也需要依赖关系数据库、**Zookeeper** 等中间件。参考美团技术团队的一篇文章：https://tech.meituan.com/2017/04/21/mt-leaf.html 。
+
+###### (5) 雪花算法
+
+Github 地址：https://github.com/twitter-archive/snowflake。
+
+snowflake 算法是 Twitter 开源的**分布式 id 生成算法**，采用 Scala 语言实现，原理就是利用一个 **64 位的 long 型的 id**，1 个 bit 是不用的，用其中的 41 bits 作为毫秒数，用 10 bits 作为工作机器 id，12 bits 作为序列号。
+
+* **1 bit**：**不用**，为啥呢？因为二进制里第一个 bit 为如果是 1，那么都是负数，但是我们生成的 id 都是正数，所以第一个 bit 统一都是 0。
+* **41 bits**：**表示的是时间戳**，单位是毫秒。41 bits 可以表示的数字多达 `2^41 - 1` ，也就是可以标识 `2^41 - 1` 个毫秒值，换算成年就是表示 69 年的时间。
+* **10 bits**：**记录工作机器 id**，代表的是这个服务最多可以部署在 2^10 台机器上，也就是 1024 台机器。但是 10 bits 里 5 个 bits 代表机房 id，5 个 bits 代表机器 id。意思就是最多代表 `2^5` 个机房（32 个机房），每个机房里可以代表 `2^5` 个机器（32台机器）。
+* **12 bits**：**这个是用来记录同一个毫秒内产生的不同 id**，12 bits 可以代表的最大正整数是 `2^12 - 1 = 4096` ，也就是说可以用这个 12 bits 代表的数字来区分**同一个毫秒内**的 4096 个不同的 id。
+
+``` 
+0 | 0001100 10100010 10111110 10001001 01011100 00 | 10001 | 1 1001 | 0000 00000000
+```
+
+``` java
+public class IdWorker {
+
+    private long workerId;
+    private long datacenterId;
+    private long sequence;
+
+    public IdWorker(long workerId, long datacenterId, long sequence) {
+        // sanity check for workerId
+        // 这儿就检查了一下，要求就是传递进来的机房id和机器id不能超过32，不能小于0
+        if (workerId > maxWorkerId || workerId < 0) {
+            throw new IllegalArgumentException(
+                String.format("worker Id can't be greater than %d or less than 0", maxWorkerId));
+        }
+        if (datacenterId > maxDatacenterId || datacenterId < 0) {
+            throw new IllegalArgumentException(
+                String.format("datacenter Id can't be greater than %d or less than 0", maxDatacenterId));
+        }
+        System.out.printf(
+            "worker starting. timestamp left shift %d, datacenter id bits %d, worker id bits %d, sequence bits %d, workerid %d",
+            timestampLeftShift, datacenterIdBits, workerIdBits, sequenceBits, workerId);
+
+        this.workerId = workerId;
+        this.datacenterId = datacenterId;
+        this.sequence = sequence;
+    }
+
+    private long twepoch = 1288834974657L;
+
+    private long workerIdBits = 5L;
+    private long datacenterIdBits = 5L;
+
+    // 这个是二进制运算，就是5bit最多只能有31个数字，也就是说机器id最多只能是32以内
+    private long maxWorkerId = -1L ^ (-1L << workerIdBits);
+
+    // 这个是一个意思，就是5bit最多只能有31个数字，机房id最多只能是32以内
+    private long maxDatacenterId = -1L ^ (-1L << datacenterIdBits);
+    private long sequenceBits = 12L;
+
+    private long workerIdShift = sequenceBits;
+    private long datacenterIdShift = sequenceBits + workerIdBits;
+    private long timestampLeftShift = sequenceBits + workerIdBits + datacenterIdBits;
+    private long sequenceMask = -1L ^ (-1L << sequenceBits);
+
+    private long lastTimestamp = -1L;
+
+    public long getWorkerId() {
+        return workerId;
+    }
+
+    public long getDatacenterId() {
+        return datacenterId;
+    }
+
+    public long getTimestamp() {
+        return System.currentTimeMillis();
+    }
+
+    public synchronized long nextId() {
+        // 这儿就是获取当前时间戳，单位是毫秒
+        long timestamp = timeGen();
+
+        if (timestamp < lastTimestamp) {
+            System.err.printf("clock is moving backwards.  Rejecting requests until %d.", lastTimestamp);
+            throw new RuntimeException(String.format(
+                "Clock moved backwards.  Refusing to generate id for %d milliseconds", lastTimestamp - timestamp));
+        }
+
+        if (lastTimestamp == timestamp) {
+            // 这个意思是说一个毫秒内最多只能有4096个数字
+            // 无论你传递多少进来，这个位运算保证始终就是在4096这个范围内，避免你自己传递个sequence超过了4096这个范围
+            sequence = (sequence + 1) & sequenceMask;
+            if (sequence == 0) {
+                timestamp = tilNextMillis(lastTimestamp);
+            }
+        } else {
+            sequence = 0;
+        }
+
+        // 这儿记录一下最近一次生成id的时间戳，单位是毫秒
+        lastTimestamp = timestamp;
+
+        // 这儿就是将时间戳左移，放到 41 bit那儿；
+        // 将机房 id左移放到 5 bit那儿；
+        // 将机器id左移放到5 bit那儿；将序号放最后12bit；
+        // 最后拼接起来成一个64bit的二进制数字，转换成10进制就是个long型
+        return ((timestamp - twepoch) << timestampLeftShift) | (datacenterId << datacenterIdShift)
+            | (workerId << workerIdShift) | sequence;
+    }
+
+    private long tilNextMillis(long lastTimestamp) {
+        long timestamp = timeGen();
+        while (timestamp <= lastTimestamp) {
+            timestamp = timeGen();
+        }
+        return timestamp;
+    }
+
+    private long timeGen() {
+        return System.currentTimeMillis();
+    }
+
+    // ---------------测试---------------
+    public static void main(String[] args) {
+        IdWorker worker = new IdWorker(1, 1, 1);
+        for (int i = 0; i < 30; i++) {
+            System.out.println(worker.nextId());
+        }
+    }
+
+}
+```
+
+这个 snowflake 算法相对来说还是比较靠谱的，可支持一般每秒几万并发的场景。
+
+##### 6. 分库分表
+
+**分表**就是把一个**表的数据放到多个表**中，然后查询的时候**就查一个表**。比如按照用户 id 来分表，将一个用户的数据就放在一个表中。然后操作的时候对一个用户就操作那个表就可以。这样可以控制每个表的数据量在可控的范围内，比如每个表就固定在 200 万以内。如果**单表数据量太大**，会极大影响 SQL **执行的性能**。
+
+**分库**：一般经验而言，最多支撑到并发 **2000**，一定要扩容了，而且一个健康的**单库**并发值最好保持在每秒 1000 左右，不要太大。那么可以**将一个库的数据拆分到多个库中，访问的时候就访问一个库好了**。
+
+|        #         |          分库分表前          |                    分库分表后                    |
+| :--------------: | :--------------------------: | :----------------------------------------------: |
+| **并发支撑情况** |    单机部署，扛不住高并发    |       从单机到多机，能承受的并发增加了多倍       |
+| **磁盘使用情况** |     单机磁盘容量几乎撑满     | 拆分为**多个库**，数据库服务器磁盘使用率大大降低 |
+| **SQL 执行性能** | 单表数据量太大，SQL 越跑越慢 |       单表数据量减少，SQL 执行效率明显提升       |
+
+##### 7. 分库分表中间件
+
+比较常见的分库分表中间件有：Sharding-jdbc、Mycat、Cobar、TDDL、Atlas 等。
+
+无论**分库还是分表**，一般的数据库中间件都是可以支持的。这些中间件可以做到在分库分表之后，**可以根据指定的某个字段值**，比如说 userid，**自动路由到对应的库上去，然后再自动路由到对应的表里去**。
+
+###### (1) Sharding-jdbc
+
+**当当开源**的，属于 **client 层**方案，是 **ShardingSphere 的 client 层方案**， ShardingSphere 还提供 proxy 层的方案 Sharding-Proxy。确实之前用的还比较多一些，因为 SQL 语法支持也比较多，没有太多限制，而且截至 2019.4，已经推出到了 4.0.0-RC1 版本，支持分库分表、读写分离、分布式 id 生成、柔性事务（最大努力送达型事务、TCC 事务）。而且确实之前使用的公司会比较多一些，目前社区也还一直在开发和维护，还算是比较活跃，算是一个现在也可以选择的方案。
+
+Sharding-jdbc 这种 **client 层**方案的**优点在于不用部署，运维成本低，不需要代理层的二次转发请求，性能很高**，但是如果遇到升级啥的需要各个系统都重新升级版本再发布，各个系统都需要**耦合** Sharding-jdbc 的依赖。
+
+###### (2) Mycat
+
+基于 Cobar 改造的，属于 **proxy 层**方案，支持的功能**非常完善**，而且目前应该是非常火的而且不断流行的数据库中间件，社区很活跃，也有一些公司开始在用了。
+
+Mycat 这种 **proxy 层**方案的**缺点在于需要部署**，自己运维一套中间件，运维成本高，但是**好处在于对于各个项目是透明的**，如果遇到升级之类的都是自己中间件那里搞就行了。
+
+###### (3) 其他
+
+其他的用的少的还有 Cobar、TDDL、Atlas 等。
+
+###### (4) 选型
+
+现在其实建议考量的，就是 **Sharding-jdbc 和 Mycat**，这两个都可以去考虑使用。
+
+通常来说，这两个方案其实都可以选用，建议**中小型公司选用 Sharding-jdbc**，client 层方案轻便，而且维护成本低，不需要额外增派人手，而且中小型公司系统复杂度会低一些，项目也没那么多；但是**中大型公司最好还是选用 Mycat 这类 proxy 层**方案，因为可能大公司系统和项目非常多，团队很大，人员充足，那么最好是专门弄个人来研究和维护 Mycat，然后大量项目直接透明使用即可。
+
+##### 8. 行垂直切分或水平切分实例
+
+**水平拆分**的意思，就是把一个**表的数据给弄到多个库的多个表**里去，但是每个库的**表结构都一样，**只不过每个库表放的**数据是不同**的，所有库表的数据加起来就是全部数据。水平拆分的意义，就是将数据均匀放更多的库里，然后用多个库来扛更高的并发，还有就是用多个库的存储容量来进行扩容。
+
+<img src="assets/database-split-horizon.png" alt="database-split-horizon" style="zoom:80%;" />
+
+**垂直拆分**的意思，就是**把一个有很多字段的表给拆分成多个表**，**或者是多个库上去**。每个库表的**结构都不一样**，每个库表都包含部分字段。一般来说，会**将较少的访问频率很高的字段放到一个表里去**，然后**将较多的访问频率很低的字段放到另外一个表里去**。因为数据库是有缓存的，访问频率高的行字段越少，就可以在缓存里缓存更多的行，性能就越好。这个一般在表层面做的较多一些。
+
+<img src="assets/database-split-vertically.png" alt="database-split-vertically" style="zoom:80%;" />
+
+这个其实挺常见的，比如把一个大表拆开，订单表、订单支付表、订单商品表。
+
+还有**表层面的拆分**，就是**分表**，将一个表变成 **N 个表**，就是**让每个表的数据量控制在一定范围内**，保证 SQL 的性能。否则单表数据量越大，SQL 性能就越差。一般是 200 万行左右，不要太多，但是也得看具体你怎么操作，也可能是 500 万，或者是 100 万。
+
+还有两种**分库分表的方式**：
+
+* 一种是按照 range 来分，就是每个库一段连续的数据，这个一般是按比如**时间范围**来的，但是这种一般较少用，因为很容易产生热点问题，大量的流量都打在最新的数据上了。
+* 或者是按照某个字段 hash 一下均匀分散，这个较为常用。
+
+range 来分，好处在于说，扩容的时候很简单，因为你只要预备好，给每个月都准备一个库就可以了，到了一个新的月份的时候，自然而然，就会写新的库了；缺点，但是大部分的请求，都是访问最新的数据。实际生产用 range，要看场景。
+
+hash 分发，好处在于说，可以平均分配每个库的数据量和请求压力；坏处在于说扩容起来比较麻烦，会有一个数据迁移的过程，之前的数据需要重新计算 hash 值重新分配到不同的库或表。
 
 
 
