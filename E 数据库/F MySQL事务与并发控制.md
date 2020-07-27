@@ -21,8 +21,6 @@
 
 一般来说，**事务**是必须满足 4 个条件（ACID）：**原子性（Atomicity，或称不可分割性）、一致性（Consistency）、隔离性（Isolation，又称独立性）、持久性（Durability）**。
 
-<img src="../../JavaNotes/E 数据库/assets/image-20200531201338144.png" alt="image-20200531201338144" style="zoom:67%;" />
-
 ###### (1) 原子性Atomicity
 
 **原子性**：一个事务（transaction）中的所有操作可以被视为一个不可分割的**最小执行单元**，要么**全部完成**，要么全部不完成，不会结束在中间某个环节。
