@@ -8,6 +8,7 @@
 - 注重**临界值**判断。
 - 一定要对**输入值**进行判断，输入范围，输入格式，输入类型等。
 - 一定要注意输入输出的数据**超过存储范围**的情况。
+- 遇到**字母对比**的，一定要跟面试官确定一下**大小写的情况**。
 
 
 
@@ -287,28 +288,64 @@ public ArrayList<Integer> printListFromTailToHead(ListNode listNode) {
 
 ```java
 // 缓存中序遍历数组每个值对应的索引
-private Map<Integer, Integer> indexForInOrders = new HashMap<>();
+HashMap<Integer, Integer> dict = new HashMap<>();
 
-public TreeNode reConstructBinaryTree(int[] pre, int[] in) {
-    // 把每个中序结点的值和索引放入map便于查询
-    for (int i = 0; i < in.length; i++)
-        indexForInOrders.put(in[i], i);
-    return reConstructBinaryTree(pre, 0, pre.length - 1, 0);
+int[] po;
+
+public TreeNode buildTree(int[] preOrder, int[] inOrder) {
+    // 前序遍历数组
+    po = preOrder;
+    // 将中序遍历的结果放入Map并记录其索引位置
+    for(int i = 0; i < inOrder.length; i++) {
+        dict.put(inOrder[i], i);
+    }
+    // 第一个根结点就是前序数组的0位置
+    return process(0, 0, inOrder.length - 1);
 }
 
-private TreeNode reConstructBinaryTree(int[] pre, int preL, int preR, int inL) {
+TreeNode process(int preRoot, int inLeft, int inRight) {
     // Base case
-    if (preL > preR)
-        return null;
-    // 以前序遍历的第一个结点当做当前根结点
-    TreeNode root = new TreeNode(pre[preL]);
-    // 从map中找对应的分隔索引
-    int inIndex = indexForInOrders.get(root.val);
-    // 左树大小
-    int leftTreeSize = inIndex - inL;
-    // 递归构造
-    root.left = reConstructBinaryTree(pre, preL + 1, preL + leftTreeSize, inL);
-    root.right = reConstructBinaryTree(pre, preL + leftTreeSize + 1, preR, inL + leftTreeSize + 1);
+    if(inLeft > inRight) return null;
+    // 构造根结点：就是前序数组的第一个元素
+    TreeNode root = new TreeNode(po[preRoot]);
+    // 从字典中找到根结点的索引位置
+    int rootIndex = dict.get(po[preRoot]);
+    // 递归构造左右子树
+    root.left = process(preRoot + 1, inLeft, rootIndex - 1);
+    root.right = process(preRoot + rootIndex - inLeft + 1, rootIndex + 1, inRight);
+    return root;
+}
+```
+
+还有一种直接使用列表的解法：
+
+```java
+public TreeNode buildTree2(int[] preorder, int[] inorder) {
+
+    // 下面四行代码其实就是把数组转换成list
+    List<Integer> pre = new ArrayList<>();
+    for (int i : preorder) pre.add(i);
+    List<Integer> in = new ArrayList<>();
+    for (int i : inorder) in.add(i);
+
+    // 其实这个函数就这一行
+    return process(pre, in);
+}
+
+TreeNode process(List<Integer> pre, List<Integer> in) {
+    // 递归停止条件，就是遍历完了列表
+    if (pre.size() == 0) return null;
+
+    // 前序遍历的第一个元素就是root
+    int val = pre.get(0);
+    TreeNode root = new TreeNode(val);
+
+    // 从中序遍历里面找到root的位置，就把中序遍历分成两部分了
+    int rootIndex = in.indexOf(root.val);
+
+    //别问 问就是递归
+    root.left = process(pre.subList(1, 1 + rootIndex), in.subList(0, rootIndex));
+    root.right = process(pre.subList(1 + rootIndex, pre.size()), in.subList(1 + rootIndex, in.size()));
     return root;
 }
 ```
