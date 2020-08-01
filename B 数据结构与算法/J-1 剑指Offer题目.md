@@ -769,36 +769,63 @@ public int minNumberInRotateArray(int[] nums) {
 }
 ```
 
-如果数组**元素允许重复**，会出现一个特殊的情况：**nums[l] == nums[m] == nums[h]**，此时无法确定解在哪个区间，需要**切换到顺序查找**。例如对于数组 {1, 1, 1, 0, 1}，l、m 和 h 指向的数都为 1，此时**无法知道最小数字 0 在哪个区间**。
+注意：如果数组**元素允许重复**，会出现一个特殊的情况：**nums[l] == nums[m] == nums[h]**，此时无法确定解在哪个区间，需要**切换到顺序查找**。例如对于数组 {1, 1, 1, 0, 1}，l、m 和 h 指向的数都为 1，此时**无法知道最小数字 0 在哪个区间**。
 
 ```java
-public int minNumberInRotateArray(int[] nums) {
-    if (nums.length == 0)
-        return 0;
-    int l = 0, h = nums.length - 1;
-    while (l < h) {
-        int m = l + (h - l) / 2;
-        if (nums[l] == nums[m] && nums[m] == nums[h])
-            return minNumber(nums, l, h);
-        else if (nums[m] <= nums[h])
-            h = m;
-        else
-            l = m + 1;
+public int minNumberInRotateArray2(int[] nums) {
+    if (nums.length == 0) return 0;
+    int left = 0, right = nums.length - 1;
+    while (left < right) {
+        int mid = left + (right - left) / 2;
+        // 左右中值都一样
+        if (nums[left] == nums[mid] && nums[mid] == nums[right]) {
+            // 此时从左到右顺序查找
+            return minNumber(nums, left, right);
+            // 中间小于右边
+        } else if (nums[mid] <= nums[right]) {
+            right = mid;
+            // 中间小于左边
+        } else {
+            left = mid + 1;
+        }
     }
-    return nums[l];
+    return nums[left];
 }
 
-private int minNumber(int[] nums, int l, int h) {
-    for (int i = l; i < h; i++)
-        if (nums[i] > nums[i + 1])
+private int minNumber(int[] nums, int left, int right) {
+    for (int i = left; i < right; i++) {
+        if (nums[i] > nums[i + 1]) {
             return nums[i + 1];
-    return nums[l];
+        }
+    }
+    return nums[left];
+}
+```
+
+再来一种**允许重复**的简便写法：
+
+```java
+public int minArray(int[] nums) {
+    int left = 0, right = nums.length - 1;
+    // 整体二分模板
+    while (left < right) {
+        // 找中值
+        int mid = (left + right) / 2;
+        if (nums[mid] > nums[right]) {
+            left = mid + 1;
+        } else if (nums[mid] < nums[right]) {
+            right = mid;
+        } else {
+            right--;
+        }
+    }
+    return nums[left];
 }
 ```
 
 ----
 
-#### 12. 矩阵中的路径
+#### 12. 矩阵中的路径【中等】
 
 [NowCoder](https://www.nowcoder.com/practice/c61c6999eecb4b8f88a98f66b273a3cc?tpId=13&tqId=11218&tPage=1&rp=1&ru=/ta/coding-interviews&qru=/ta/coding-interviews/question-ranking)
 
@@ -806,7 +833,7 @@ private int minNumber(int[] nums, int l, int h) {
 
 判断在一个**矩阵中**是否存在一条包**含某字符串所有字符的路径**。路径可以从矩阵中的任意一个格子开始，每一步可以在矩阵中向**上下左右**移动一个格子。如果一条路径经过了矩阵中的某一个格子，则该路径**不能**再进入该格子。
 
-例如下面的矩阵包含了一条 bfce 路径。
+例如下面的矩阵包含了一条 **bfce** 路径。
 
 <img src="assets/1563522132161.png" alt="1563522132161" style="zoom:50%;" />
 
@@ -816,62 +843,48 @@ private int minNumber(int[] nums, int l, int h) {
 
 例如下图示例中，从 f 开始，下一步有 4 种搜索可能，如果先搜索 b，需要将 b 标记为**已经使用**，防止重复使用。在**这一次搜索**结束之后，需要将 b 的**已经使用状态清除**，并搜索 c。
 
-<img src="assets/1563522147846.png" alt="1563522147846" style="zoom:50%;" />
+<img src="assets/1563522147846.png" alt="1563522147846" style="zoom:40%;" />
 
 这里用了一个一位数组用于表示被访问的位置，也可以用二维数组，一维数组是做了坐标转换。
 
 ```java
-public boolean hasPath(char[] matrix, int rows, int cols, char[] str) {
-    // Base case
-    if (matrix == null || rows < 1 || cols < 1 || str == null) {
-        return false;
-    }
-    // 用于记录已经访问过位置的标志位数组
-    boolean[] isVisited = new boolean[rows * cols];
-    // 路径长度,表示当前以及匹配到了第几个位置
-    int pathLength = 0;
-    // 遍历数组进行回溯求解
-    for (int row = 0; row < rows; row++) {
-        for (int col = 0; col < cols; col++) {
-            if (backTracing(matrix, rows, cols, row, col, str, pathLength, isVisited))
-                return true;
+char[][] matrix;
+char[] word;
+public boolean exist(char[][] matrix, String word) {
+    this.matrix = matrix;
+    this.word = word.toCharArray();
+    for(int i = 0; i < matrix.length; i++) {
+        for(int j = 0; j < matrix[0].length; j++) {
+            // 以矩阵每个位置为开头进行dfs查询
+            if(dfs(i, j, 0)) return true;
         }
     }
     return false;
 }
 
-private boolean backTracing(char[] matrix, int rows, int cols, int row, int col, char[] str, int pathLength, boolean[] isVisited) {
-    // 先根据col和row计算第一个元素转一位数组的位置
-    int index = row * cols + col;
-    // 递归终止条件
-    if (row < 0 || col < 0 || row >= rows || col >= cols ||
-        // 如果字符不匹配返回false
-        matrix[index] != str[pathLength]
-        || isVisited[index] == true) {
-        return false;
-    }
-    // 若pathLength已经到str末尾,说明之前的匹配成功了,直接返回True即可
-    if (pathLength == str.length - 1) {
-        return true;
-    }
-    // 表示已经走过了
-    isVisited[index] = true;
-    // 回溯递归寻找每次找到了就给k加一，找不到就需要还原
-    boolean hasPath =
-        backTracing(matrix, rows, cols, row - 1, col, str, pathLength + 1, isVisited)
-        || backTracing(matrix, rows, cols, row + 1, col, str, pathLength + 1, isVisited)
-        || backTracing(matrix, rows, cols, row, col - 1, str, pathLength + 1, isVisited)
-        || backTracing(matrix, rows, cols, row, col + 1, str, pathLength + 1, isVisited);
-    if (hasPath) {
-        return true;
-    }
-    // 走到这，说明这一条路不通，还原，再试其他的路径
-    isVisited[index] = false;
-    return false;
+// 以某个位置开始进行DFS搜索
+boolean dfs(int i, int j, int walkLen) {
+    // Base case: 数组越界直接退出
+    if(i >= matrix.length || i < 0 || j >= matrix[0].length || j < 0) return false;
+    // 当前位置与目标位置的字符不对应，直接返回
+    if(matrix[i][j] != word[walkLen]) return false;
+    // 到这里，说明每个字符都是对应的，且已经遍历的步长已经等于目标单词的长度了
+    if(walkLen == word.length - 1) return true;
+    // 这里是将访问过的位置修改成一个不可能出现的字符，用于标记已经访问，也可以单独使用一个visited数组进行
+    char tmp = matrix[i][j];
+    matrix[i][j] = '/';
+    // 往四个方向增加搜索，同时已经搜索的步长+1
+    boolean res = dfs(i + 1, j, walkLen + 1)
+        || dfs(i - 1, j, walkLen + 1)
+        || dfs(i, j + 1, walkLen + 1)
+        || dfs(i , j - 1, walkLen + 1);
+    // 撤消修改
+    matrix[i][j] = tmp;
+    return res;
 }
 ```
 
-#### 13. 机器人的运动范围
+#### 13. 机器人的运动范围【中等】
 
 [NowCoder](https://www.nowcoder.com/practice/6e5207314b5241fb83f2329e89fdecc8?tpId=13&tqId=11219&tPage=1&rp=1&ru=/ta/coding-interviews&qru=/ta/coding-interviews/question-ranking)
 
@@ -879,63 +892,59 @@ private boolean backTracing(char[] matrix, int rows, int cols, int row, int col,
 
 地上有一个 **m 行和 n 列**的**方格**。一个机器人从坐标 **(0, 0)** 的格子开始移动，每一次只能向左右上下四个方向**移动一**格，但是**不能进入行坐标和列坐标**的数位**之和大于 k** 的格子。
 
-例如，当 k 为 18 时，机器人能够进入方格 (35, 37)，因为 **3+5+3+7=18**。但是，它不能进入方格 (35, 38)，因为 3+5+3+8=19。请问该机器人能够达到**多少个格子**？
+例如，当 k 为 18 时，机器人能够进入方格 (35, 37)，因为 **3+5+3+7=18**。但是它不能进入方格 (35, 38)，因为 3+5+3+8=19。请问该机器人能够达到**多少个格子**？
 
 ##### 解题思路
 
 使用深度优先搜索（Depth First Search，DFS）方法进行求解。回溯是**深度优先搜索**的一种**特例**，它在一次搜索过程中需要**设置一些**本次搜索过程的**局部状态**，并在本次搜索结束之后**清除状态**。而普通的深度优先搜索并不需要使用这些局部状态，虽然还是有可能设置一些全局状态。
 
 ```java
-// 这个数组用于DFS的几个方向
-private static final int[][] next = {{0, -1}, {0, 1}, {-1, 0}, {1, 0}};
 // 全局计数器
-private int cnt = 0;
+private int counter = 0;
 private int rows;
 private int cols;
-private int threshold;
-private int[][] digitSum;
+private int digitSum;
+private boolean[][] visited;
 
-public int movingCount(int threshold, int rows, int cols) {
-    this.rows = rows;
-    this.cols = cols;
-    this.threshold = threshold;
-    initDigitSum();
+public int movingCount(int rows, int cols, int digitSum) {
+    this.rows = rows; this.cols = cols; this.digitSum = digitSum;
     // 标记是否已经访问
-    boolean[][] marked = new boolean[rows][cols];
+    visited = new boolean[rows][cols];
     // DFS
-    dfs(marked, 0, 0);
-    return cnt;
+    dfs(0, 0);
+    return counter;
 }
 
-private void dfs(boolean[][] marked, int row, int col) {
-    // Base case
-    if (row < 0 || row >= rows || col < 0 || col >= cols || marked[row][col])
+private void dfs(int row, int col) {
+    // Base case 如果遇到越界或者已经访问的就退出
+    if (row < 0 || row >= rows || col < 0 || col >= cols || visited[row][col])
         return;
     // 标记已经访问的位置
-    marked[row][col] = true;
+    visited[row][col] = true;
     // 计算这个位置的数字是否符合标准
-    if (this.digitSum[row][col] > this.threshold)
-        return;
+    if (getSum(row, col) > digitSum) return;
     // 合格计数器++
-    cnt++;
+    counter++;
     // 继续DFS
-    for (int[] n : next)
-        dfs(marked, row + n[0], col + n[1]);
+    dfs(row + 1, col);
+    dfs(row - 1, col);
+    dfs(row, col + 1);
+    dfs(row, col - 1);
 }
-
-private void initDigitSum() {
-    int[] digitSumOne = new int[Math.max(rows, cols)];
-    for (int i = 0; i < digitSumOne.length; i++) {
-        int n = i;
-        while (n > 0) {
-            digitSumOne[i] += n % 10;
-            n /= 10;
-        }
+// 求一个位置的各位之和
+private int getSum(int i, int j) {
+    int res = 0;
+    int a = i;
+    while(a != 0) {
+        res = res + a % 10;
+        a = a / 10;
     }
-    this.digitSum = new int[rows][cols];
-    for (int i = 0; i < this.rows; i++)
-        for (int j = 0; j < this.cols; j++)
-            this.digitSum[i][j] = digitSumOne[i] + digitSumOne[j];
+    a = j;
+    while(a != 0) {
+        res = res + a % 10;
+        a = a / 10;
+    }
+    return res;
 }
 ```
 
@@ -995,7 +1004,49 @@ public int cutRope(int target) {
 
 ###### (2) 动态规划
 
-定义长度为 n 的绳子剪切后的**最大乘积为 f(n)**，剪了一刀后，**f(n) = max(f(i) * f(n - i))**。假设 **n 为 10**，第一刀之后分为了 4-6，而 6 也可能再分成 2-4（6 的最大是 3-3，但过程中还是要比较 2-4 这种情况的），而上一步 4-6 中也需要求长度为 4 的问题的最大值，可见，各个子问题之间是有**重叠**的，所以可以先计算小问题，存储下每个小问题的结果，逐步往上，求得大问题的最优解。
+定义长度为 n 的绳子剪切后的**最大乘积为 f(n)**，剪了一刀后，**f(n) = max(f(i) * f(n - i))**。假设 **n 为 10**，第一刀之后分为了 4-6，而 6 也可能再分成 2-4（6 的最大是 3-3，但过程中还是要比较 2-4 这种情况的），而上一步 4-6 中也需要求长度为 4 的问题的最大值，可见，各个子问题之间是有**重叠**的，所以可以**先计算小问题**，存储下每个小问题的结果，逐步往上，求得大问题的最优解。
+
+第一步：定义dp[n]的值的含义为：数字n的乘积最大值
+
+```java
+n=2:  1+1  -->1*1=1;   				dp[2]=1;
+n=3:  2+1  -->2*1=2;   				dp[3]=2;
+n=4:  2+2  -->2*2=4;   				dp[4]=4;
+n=5:  3+2  -->3*2=6;   				dp[5]=6;
+```
+
+貌似看不出规律，别急再多写几个
+
+```java
+n=6:  3+3  -->3*3=4;                 dp[6]=9;
+n=7:  4+3  -->4*3=12;-->dp[4]*3=12   dp[7]=12;
+n=8:  5+3  -->6*3=12;-->dp[5]*3=18   dp[8]=18;
+n=9:  6+3  -->9*3=12;-->dp[6]*3=27   dp[9]=27;
+n=10: 7+3  -->12*3=36;-->dp[7]*3=12   dp[10]=36;
+```
+
+第二步：找到递推的规律：
+
+通过上述分析，规律明显在n=7以后为
+
+```java
+if(n>=7)
+	dp[n] = dp[n-3]*3;
+```
+
+第三步：找初始值：
+
+初始值在第二步找规律已经找到了
+
+```java
+n=2:  1+1  -->1*1=1;   				dp[2]=1;
+n=3:  2+1  -->2*1=2;   				dp[3]=2;
+n=4:  2+2  -->2*2=4;   				dp[4]=4;
+n=5:  3+2  -->3*2=6;   				dp[5]=6;
+n=6:  3+3  -->3*3=4;                dp[6]=9;
+```
+
+通过以上分析，就直接可以写代码了：
 
 ```java
 public int integerBreak(int n) {
@@ -1005,6 +1056,48 @@ public int integerBreak(int n) {
         for (int j = 1; j < i; j++)
             dp[i] = Math.max(dp[i], Math.max(j * (i - j), dp[j] * (i - j)));
     return dp[n];
+}
+```
+
+或者：
+
+```java
+public int cuttingRope3(int n) {
+    // 1.创建数组-设置对应的含义,dp[n]为长度为 n 时候，最大的乘积 我们只需求出dp[n]
+    int[] dp = new int[n + 7];
+    // 2.确定初始值
+    dp[0] = 0;
+    dp[1] = 0;
+    dp[2] = 1;
+    dp[3] = 2;
+    dp[4] = 4;
+    dp[5] = 6;
+    dp[6] = 9;
+    if (n <= 6) {
+        return dp[n];
+    }
+    // 3.找到递推关系
+    for (int i = 7; i <= n; i++) {
+        dp[i] = dp[i - 3] * 3;
+    }
+    return dp[n];
+}
+```
+
+这个题的变形就是结果过大超出范围，需要取模表示结果。
+
+```java
+public int cuttingRope4(int n) {
+    if (n <= 3) return n - 1;
+    int b = n % 3, mod = 1000000007;
+    long rem = 1, x = 3;
+    for (int a = n / 3 - 1; a > 0; a /= 2) {
+        if (a % 2 == 1) rem = (rem * x) % mod;
+        x = (x * x) % mod;
+    }
+    if (b == 0) return (int) (rem * 3 % mod);
+    if (b == 1) return (int) (rem * 4 % mod);
+    return (int) (rem * 6 % mod);
 }
 ```
 
@@ -1018,7 +1111,7 @@ public int integerBreak(int n) {
 
 输入一个**整数**，输出该数**二进制**表示中 1 的个数。
 
-###### n&(n-1)
+###### (1) n&(n-1)
 
 该**位运算**去除 n 的位级表示中**最低的那一位**。
 
@@ -1042,11 +1135,28 @@ public int NumberOf1(int n) {
 }
 ```
 
-###### Integer.bitCount()
+###### (2) Integer.bitCount()
 
 ```java
 public int NumberOf1(int n) {
     return Integer.bitCount(n);
+}
+```
+
+###### (3) 右移法
+
+记住这个，面试可用。
+
+```java
+public int hammingWeight(int num) {
+    int res = 0;
+    while(num != 0) {
+        // 和1相与，结果为1则说明个位为1
+        if((num & 1) == 1) res++;
+        // 右移直到为0
+        num = num >>> 1;
+    }
+    return res;
 }
 ```
 
@@ -1061,6 +1171,8 @@ public int NumberOf1(int n) {
 给定一个 **double 类型的浮点数** base 和 int 类型的整数 exponent，求 base 的 exponent 次方。
 
 ##### 解题思路
+
+###### (1) 递归法
 
 下面的讨论中 x 代表 **base**，n 代表 **exponent**。
 
@@ -1091,6 +1203,28 @@ public double Power(double base, int exponent) {
         pow = pow * base;
     // 处理负幂的情况
     return isNegative ? 1 / pow : pow;
+}
+```
+
+###### (2) 快速幂
+
+直接看解法：
+
+```java
+public double myPow(double base, int power) {
+    if (base == 0) return 0;
+    long b = power;
+    double res = 1.0;
+    if (b < 0) {
+        base = 1 / base;
+        b = -b;
+    }
+    while (b > 0) {
+        if ((b & 1) == 1) res *= base;
+        base *= base;
+        b >>= 1;
+    }
+    return res;
 }
 ```
 
