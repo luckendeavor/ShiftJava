@@ -12,7 +12,7 @@
 
 
 
-#### 3. 数组中重复的数字
+#### 3. 数组中重复的数字【简单】
 
 [NowCoder](https://www.nowcoder.com/practice/623a5ac0ea5b4e5f95552655361ae0a8?tpId=13&tqId=11203&tPage=1&rp=1&ru=/ta/coding-interviews&qru=/ta/coding-interviews/question-ranking)
 
@@ -48,11 +48,11 @@ public int findRepeatNumber(int[] nums) {
     for (int i = 0; i < nums.length; i++) {
         // 如果当前位置不等于索引则不断进行交换
         while (nums[i] != i) {
-            // 如果已经有了
+            // 如果目标索引处已经有了元素则说明重复
             if (nums[i] == nums[nums[i]]) {
                 return nums[i];
             }
-            // 交换
+            // 否则进行交换
             swap(nums, i, nums[i]);
         }
     }
@@ -68,7 +68,7 @@ private void swap(int[] nums, int i, int j) {
 
 ----
 
-#### 4. 二维数组中的查找
+#### 4. 二维数组中的查找【简单】
 
 [NowCoder](https://www.nowcoder.com/practice/abc3fe2ce8e146608e868a70efebf62e?tpId=13&tqId=11154&tPage=1&rp=1&ru=/ta/coding-interviews&qru=/ta/coding-interviews/question-ranking)
 
@@ -99,22 +99,21 @@ Given target = 20, return false.
 <img src="assets/0ad9f7ba-f408-4999-a77a-9b73562c9088.gif" alt="image-20200618154803867" style="zoom: 67%;" />
 
 ```java
-public boolean Find(int target, int[][] matrix) {
+public boolean findNumberIn2DArray(int[][] matrix, int target) {
     // Base case
-    if (matrix == null || matrix.length == 0 || matrix[0].length == 0)
-        return false;
-    // 获取行和列数
-    int rows = matrix.length, cols = matrix[0].length;
-    // 开始位置是右上角
-    int r = 0, c = cols - 1; 
-    // 从右上角开始,退出循环条件是找到了左下角
-    while (r <= rows - 1 && c >= 0) {
-        if (target == matrix[r][c])
+    if(matrix == null || matrix.length == 0 || matrix[0].length == 0) return false;
+    // 从右上角开始遍历
+    int row = 0;
+    int col = matrix[0].length - 1;
+    // 维护别超出范围
+    while((row <= matrix.length - 1) && (col >= 0)) {
+        if(target == matrix[row][col]) {
             return true;
-        else if (target > matrix[r][c])
-            r++;
-        else
-            c--;
+        } else if(target < matrix[row][col]) {
+            col--;
+        } else {
+            row++;
+        }
     }
     return false;
 }
@@ -122,7 +121,7 @@ public boolean Find(int target, int[][] matrix) {
 
 ----
 
-#### 5. 替换空格
+#### 5. 替换空格【简单】
 
 [NowCoder](https://www.nowcoder.com/practice/4060ac7e3e404ad1a894ef3e17650423?tpId=13&tqId=11155&tPage=1&rp=1&ru=/ta/coding-interviews&qru=/ta/coding-interviews/question-ranking)
 
@@ -150,32 +149,45 @@ Output:
 emmm，这里用一个 **StringBuilder** 来进行最终答案的记录。
 
 ```java
-public String replaceSpace(StringBuffer str) {
-    // 原始长度
-    int P1 = str.length() - 1;
-    // 找到原来的字符串有多少个空格
-    for (int i = 0; i <= P1; i++)
-        if (str.charAt(i) == ' ')
-            str.append(" ");
-    int P2 = str.length() - 1;
-    // 注意范围
-    while (P1 >= 0 && P2 > P1) {
-        char c = str.charAt(P1--);
-        if (c == ' ') {
-            str.setCharAt(P2--, '0');
-            str.setCharAt(P2--, '2');
-            str.setCharAt(P2--, '%');
+public String replaceSpace2(String str) {
+    StringBuilder res = new StringBuilder();
+    for (int i = 0; i < str.length(); i++) {
+        if (str.charAt(i) == ' ') {
+            res.append("%20");
         } else {
-            str.setCharAt(P2--, c);
+            res.append(str.charAt(i));
         }
     }
-    return str.toString();
+    return res.toString();
+}
+```
+
+方法2：
+
+```java
+public String replaceSpace(String str) {
+    int length = str.length();
+    // 直接初始化一个原始长度3倍的数组
+    char[] array = new char[length * 3];
+    // 记录最后需要多少个字符
+    int size = 0;
+    for (int i = 0; i < length; i++) {
+        char c = str.charAt(i);
+        if (c == ' ') {
+            array[size++] = '%';
+            array[size++] = '2';
+            array[size++] = '0';
+        } else {
+            array[size++] = c;
+        }
+    }
+    return new String(array, 0, size);
 }
 ```
 
 ----
 
-#### 6. 从尾到头打印链表
+#### 6. 从尾到头打印链表【简单】
 
 [NowCoder](https://www.nowcoder.com/practice/d0267f7f55b3412ba93bd35cfa8e8035?tpId=13&tqId=11156&tPage=1&rp=1&ru=/ta/coding-interviews&qru=/ta/coding-interviews/question-ranking)
 
@@ -192,23 +204,23 @@ public String replaceSpace(StringBuffer str) {
 要逆序打印链表 1->2->3（3, 2, 1)，可以**先逆序打印链表** 2->3(3,2)，最后再打印第一个节点 1。而链表 2->3 可以看成一个新的链表，要逆序打印该链表可以继续使用求解函数，也就是在求解函数中调用自己，这就是递归函数。
 
 ```java
-public ArrayList<Integer> printListFromTailToHead(ListNode listNode) {
-    // 存放结果
-    ArrayList<Integer> ret = new ArrayList<>();
-    if (listNode != null) {
-        // 递归调用直到listNode为null为止
-        ret.addAll(printListFromTailToHead(listNode.next));
-        ret.add(listNode.val);
-    }
-    return ret;
+ArrayList<Integer> resList = new ArrayList<Integer>();
+
+public ArrayList<Integer> reversePrint(ListNode head) {
+    // 递归打印
+    process(head);
+    return resList;
+}
+void process(ListNode head) {
+    if(head == null) return;
+    process(head.next);
+    resList.add(head.val);
 }
 ```
 
 ###### (2) 使用头插法
 
-使用**头插法**可以得到一个**逆序的链表**。
-
-头结点和第一个节点的区别：
+使用**头插法**可以得到一个**逆序的链表**。头结点和第一个节点的区别：
 
 - **头结点**是在头插法中使用的一个额外节点，这个**节点不存储值；**
 - **第一个节点**就是链表的第一个真正存储值的节点。
@@ -268,7 +280,7 @@ public ArrayList<Integer> printListFromTailToHead(ListNode listNode) {
 
 ----
 
-#### 7. 重建二叉树
+#### 7. 重建二叉树【中等】
 
 [NowCoder](https://www.nowcoder.com/practice/8a19cbe657394eeaac2f6ea9b0f6fcf6?tpId=13&tqId=11157&tPage=1&rp=1&ru=/ta/coding-interviews&qru=/ta/coding-interviews/question-ranking)
 
@@ -317,7 +329,7 @@ TreeNode process(int preRoot, int inLeft, int inRight) {
 }
 ```
 
-还有一种直接使用列表的解法：
+还有一种**直接使用列表**的解法：
 
 ```java
 public TreeNode buildTree2(int[] preorder, int[] inorder) {
@@ -361,14 +373,13 @@ TreeNode process(List<Integer> pre, List<Integer> in) {
 给定一个**二叉树**和其中的**一个结点**，请找出**中序遍历**顺序的**下一个结点**并且返回。注意，树中的结点不仅包含左右子结点，同时包含**指向父结点**的指针。
 
 ```java
-public class TreeLinkNode {
-
+private static class Node {
     int val;
-    TreeLinkNode left = null;
-    TreeLinkNode right = null;
-    TreeLinkNode next = null;
+    Node left = null;
+    Node right = null;
+    Node next = null;
 
-    TreeLinkNode(int val) {
+    Node(int val) {
         this.val = val;
     }
 }
@@ -387,21 +398,22 @@ public class TreeLinkNode {
 <img src="assets/95080fae-de40-463d-a76e-783a0c677fec.gif" alt="image-20200618154803867" style="zoom: 67%;" />
 
 ```java
-public TreeLinkNode GetNext(TreeLinkNode pNode) {
+public Node GetNext(Node pNode) {
     // 如果右子树不为空
     if (pNode.right != null) {
-        // 找右子树最左的节点
-        TreeLinkNode node = pNode.right;
-        while (node.left != null)
+        // 找右子树最左的节点并返回
+        Node node = pNode.right;
+        while (node.left != null) {
             node = node.left;
+        }
         return node;
-        
-        // 向上找第一个左链接指向的树包含该节点的祖先节点
+
+        // 否则向上找第一个左链接指向的树包含该节点的祖先节点
     } else {
         // 这里是排除当前节点是最后一个节点的情况
         while (pNode.next != null) {
             // 得到父节点
-            TreeLinkNode parent = pNode.next;
+            Node parent = pNode.next;
             // 如果当前节点是其父节点的左节点就是找到了
             if (parent.left == pNode)
                 return parent;
@@ -416,7 +428,7 @@ public TreeLinkNode GetNext(TreeLinkNode pNode) {
 
 ---
 
-#### 9. 用两个栈实现队列
+#### 9. 用两个栈实现队列【简单】
 
 [NowCoder](https://www.nowcoder.com/practice/54275ddae22f475981afa2244dd448c6?tpId=13&tqId=11158&tPage=1&rp=1&ru=/ta/coding-interviews&qru=/ta/coding-interviews/question-ranking)
 
@@ -433,24 +445,26 @@ public TreeLinkNode GetNext(TreeLinkNode pNode) {
 **这里一个栈用于 push，一个栈用于 pop，当 pop 时，如果 pop 栈为空，则把 push 栈的全部元素搬到 pop 中之后再 pop，如果是 push 操作，则一直往 push 栈压入即可。**
 
 ```java
-Stack<Integer> in = new Stack<Integer>();
-Stack<Integer> out = new Stack<Integer>();
+Stack<Integer> pushStack = new Stack<>();
+Stack<Integer> popStack = new Stack<>();
+
 // 压栈操作一直往in栈压入进行累计
 public void push(int node) {
-    in.push(node);
+    pushStack.push(node);
 }
+
 // 弹栈操作则从out栈取，如果没有就把in栈的全部搬到out栈中
 public int pop() throws Exception {
     // 如果为空
-    if (out.isEmpty())
-        // 搬运
-        while (!in.isEmpty())
-            out.push(in.pop());
-	// 都为空抛异常
-    if (out.isEmpty())
+    if (popStack.isEmpty()) {
+        while (!pushStack.isEmpty()) {
+            popStack.push(pushStack.pop());
+        }
+    }
+    // 都为空抛异常
+    if (popStack.isEmpty())
         throw new Exception("queue is empty");
-	
-    return out.pop();
+    return popStack.pop();
 }
 ```
 
@@ -527,6 +541,22 @@ public class Solution {
     }
 }
 ```
+
+上面的解法，当 n 过大时，可能造成数值范围溢出，可以采用下面的代码：
+
+```java
+public int fib2(int n) {
+    int a = 0, b = 1, sum;
+    for(int i = 0; i < n; i++){
+        sum = (a + b) % 1000000007;
+        a = b;
+        b = sum;
+    }
+    return a;
+}
+```
+
+因为 **1000000007 这个数字是 10 位的最小质数**，如果数字太大溢出了，**需要将计算结果 % 1000000007才能保证得出的结果在 int 范围中**。
 
 #### 10.2 矩形覆盖
 
@@ -615,6 +645,20 @@ public int JumpFloor(int n) {
 }
 ```
 
+这里也是当 n 过大范围会溢出，可以用下面的代码：
+
+````java
+public int numWays(int n) {
+    int a = 1, b = 1, sum;
+    for(int i = 0; i < n; i++){
+        sum = (a + b) % 1000000007;
+        a = b;
+        b = sum;
+    }
+    return a;
+}
+````
+
 ----
 
 #### 10.4 变态跳台阶
@@ -678,7 +722,7 @@ public int JumpFloorII(int target) {
 
 ---
 
-#### 11. 旋转数组的最小数字
+#### 11. 旋转数组的最小数字【简单】
 
 [NowCoder](https://www.nowcoder.com/practice/9f3231a991af4f55b95579b44b7a01ba?tpId=13&tqId=11159&tPage=1&rp=1&ru=/ta/coding-interviews&qru=/ta/coding-interviews/question-ranking)
 
@@ -704,14 +748,12 @@ public int JumpFloorII(int target) {
 ```java
 public int minNumberInRotateArray(int[] nums) {
 
-    if (nums.length == 0) {
-        return 0;
-    }
+    if (nums.length == 0) return 0;
     // 维护两个索引
     int low = 0, high = nums.length - 1;
-    // 二分查找方式
+    // 二分查找搜索
     while (low < high) {
-        // 中值
+        // 取中值
         int mid = low + (high - low) / 2;
         // 如果中值小于等于右索引的值，说明右边是非递减的
         if (nums[mid] <= nums[high]) {
@@ -1985,33 +2027,34 @@ public class RandomListNode {
 <img src="assets/1563522627253.png" alt="1563522627253" style="zoom:67%;" />
 
 ```java
-public RandomListNode Clone(RandomListNode pHead) {
+public Node copyRandomList(Node pHead) {
     if (pHead == null) return null;
-    // 插入新节点
-    RandomListNode cur = pHead;
+    // 挨着插入新节点
+    Node cur = pHead;
     while (cur != null) {
-        RandomListNode clone = new RandomListNode(cur.label);
-        clone.next = cur.next;
-        cur.next = clone;
-        cur = clone.next;
+        Node newNode = new Node(cur.val);
+        // 将新节点插入原始链表中
+        newNode.next = cur.next;
+        cur.next = newNode;
+        cur = newNode.next;
     }
     // 建立random链接
     cur = pHead;
     while (cur != null) {
-        RandomListNode clone = cur.next;
+        Node newNode = cur.next;
         if (cur.random != null)
-            clone.random = cur.random.next;
-        cur = clone.next;
+            newNode.random = cur.random.next;
+        cur = newNode.next;
     }
     // 拆分
     cur = pHead;
-    RandomListNode pCloneHead = pHead.next;
+    Node cloneHead = pHead.next;
     while (cur.next != null) {
-        RandomListNode next = cur.next;
+        Node next = cur.next;
         cur.next = next.next;
         cur = next;
     }
-    return pCloneHead;
+    return cloneHead;
 }
 ```
 
