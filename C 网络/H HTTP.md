@@ -230,6 +230,7 @@ CONNECT www.example.com:443 HTTP/1.1
 ##### 5. 5XX 服务器错误
 
 -  **500 Internal Server Error** ：服务器正在**执行请求时**发生错误。
+-  **502 Bad Gateway**：**网关错误**。
 -  **503 Service Unavailable** ：服务器暂时处于**超负载**或正在进行**停机维护**，现在无法处理请求。
 
 

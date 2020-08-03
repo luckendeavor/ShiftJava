@@ -950,7 +950,7 @@ private int getSum(int i, int j) {
 
 ----
 
-#### 14. 剪绳子
+#### 14. 剪绳子【简单】
 
 [Leetcode](https://leetcode.com/problems/integer-break/description/)
 
@@ -1103,7 +1103,7 @@ public int cuttingRope4(int n) {
 
 ----
 
-#### 15. 二进制中1的个数
+#### 15. 二进制中1的个数【简单】
 
 [NowCoder](https://www.nowcoder.com/practice/8ee967e43c2c4ec193b040ea7fbb10b8?tpId=13&tqId=11164&tPage=1&rp=1&ru=/ta/coding-interviews&qru=/ta/coding-interviews/question-ranking)
 
@@ -1162,7 +1162,7 @@ public int hammingWeight(int num) {
 
 ----
 
-#### 16. 数值的整数次方
+#### 16. 数值的整数次方【中等】
 
 [NowCoder](https://www.nowcoder.com/practice/1a834e5e3e1a4b7ba251417554e07c00?tpId=13&tqId=11165&tPage=1&rp=1&ru=/ta/coding-interviews&qru=/ta/coding-interviews/question-ranking)
 
@@ -1180,7 +1180,7 @@ public int hammingWeight(int num) {
 
 <img src="assets/1563522192398.png" alt="1563522192398" style="zoom:67%;" />
 
-因为 (x\*x)<sup>n/2</sup> 可以通过递归求解，并且每次递归 n 都减小一半，因此整个算法的时间复杂度为 O(logN)。
+因为 (x\*x)<sup>n/2</sup> 可以通过递归求解，并且每次**递归 n 都减小一半**，因此整个算法的时间复杂度为 O(logN)。
 
 ```java
 public double Power(double base, int exponent) {
@@ -1244,17 +1244,21 @@ public double myPow(double base, int power) {
 
 ```java
 public void print1ToMaxOfNDigits(int n) {
-    if (n <= 0)
-        return;
+    if (n <= 0) return;
+    // 初始化一个num数组用于存放每一位
     char[] number = new char[n];
+    // 初始digit为0
     print1ToMaxOfNDigits(number, 0);
 }
 
 private void print1ToMaxOfNDigits(char[] number, int digit) {
+    // 如果digit已经等于位数长度就打印出来
     if (digit == number.length) {
+        // 打印出满足条件的数
         printNumber(number);
         return;
     }
+    // 递归打印
     for (int i = 0; i < 10; i++) {
         number[digit] = (char) (i + '0');
         print1ToMaxOfNDigits(number, digit + 1);
@@ -1291,13 +1295,11 @@ private void printNumber(char[] number) {
 
 ```java
 public ListNode deleteNode(ListNode head, ListNode tobeDelete) {
-    if (head == null || tobeDelete == null)
-        return null;
+    if (head == null || tobeDelete == null) return null;
 
-    // 只有一个结点
+    // 需要删除的是头结点
     if (head == tobeDelete) {
-        // 只有一个节点
-        head = null;
+        return head.next;
     }
     // 要删除的节点不是尾节点
     if (tobeDelete.next != null) {
@@ -1310,7 +1312,7 @@ public ListNode deleteNode(ListNode head, ListNode tobeDelete) {
 
         // 现在说明删除的结点是尾结点
     } else {
-		// 持续变量找到尾结点
+        // 持续变量找到尾结点
         ListNode cur = head;
         while (cur.next != tobeDelete)
             cur = cur.next;
@@ -1357,7 +1359,7 @@ public ListNode deleteDuplication(ListNode pHead) {
 }
 ```
 
-#### 19. 正则表达式匹配
+#### 19. 正则表达式匹配【困难】
 
 [NowCoder](https://www.nowcoder.com/practice/45327ae22b7b413ea21df13ee7d6429c?tpId=13&tqId=11205&tPage=1&rp=1&ru=/ta/coding-interviews&qru=/ta/coding-interviews/question-ranking)
 
@@ -1449,9 +1451,47 @@ public boolean isNumeric(char[] str) {
 }
 ```
 
+普通的方法：
+
+```java
+public boolean isNumber(String s) {
+    if (s == null || s.length() == 0) return false;
+    // 标记是否遇到数位、小数点、‘e’或'E'
+    boolean isNum = false, isDot = false, isCharE = false;
+    // 转为字符数组，遍历判断每个字符
+    char[] str = s.trim().toCharArray();
+    for (int i = 0; i < str.length; i++) {
+        // 判断当前字符是否为 0~9 的数位
+        if (str[i] >= '0' && str[i] <= '9') {
+            isNum = true;
+            // 遇到小数点
+        } else if (str[i] == '.') {
+            // 小数点之前可以没有整数，但是不能重复出现小数点、或出现‘e’、'E'
+            if (isDot || isCharE) return false;
+            // 标记已经遇到小数点
+            isDot = true;
+            // 遇到‘e’或'E'
+        } else if (str[i] == 'e' || str[i] == 'E') {
+            // ‘e’或'E'前面必须有整数，且前面不能重复出现‘e’或'E'
+            if (!isNum || isCharE) return false;
+            // 标记已经遇到‘e’或'E'
+            isCharE = true;
+            // 重置isNum，因为‘e’或'E'之后也必须接上整数，防止出现 123e或者123e+的非法情况
+            isNum = false;
+        } else if (str[i] == '-' || str[i] == '+') {
+            if (i != 0 && str[i - 1] != 'e' && str[i - 1] != 'E')
+                // 正负号只可能出现在第一个位置，或者出现在‘e’或'E'的后面一个位置
+                return false;
+            // 其它情况均为不合法字符
+        } else return false; 
+    }
+    return isNum;
+}
+```
+
 ----
 
-#### 21. 调整数组顺序使奇数位于偶数前面
+#### 21. 调整数组顺序使奇数位于偶数前面【简单】
 
 [NowCoder](https://www.nowcoder.com/practice/beb5aa231adc45b2a5dcc5b62c93f593?tpId=13&tqId=11166&tPage=1&rp=1&ru=/ta/coding-interviews&qru=/ta/coding-interviews/question-ranking)
 
@@ -1463,62 +1503,31 @@ public boolean isNumeric(char[] str) {
 
 ##### 解题思路
 
-方法一：创建**一个新数组**，时间复杂度 O(N)，空间复杂度 O(N)。这种面试就算了，直接白给。
+###### (1) 双指针法
 
 ```java
-public void reOrderArray(int[] nums) {
-    // 奇数个数
-    int oddCnt = 0;
-    for (int x : nums)
-        if (!isEven(x))
-            oddCnt++;
-    int[] copy = nums.clone();
-    int i = 0, j = oddCnt;
-    for (int num : copy) {
-        if (num % 2 == 1)
-            nums[i++] = num;
-        else
-            nums[j++] = num;
+public int[] exchange(int[] nums) {
+    // 双指针
+    int left = 0, right = nums.length - 1;
+    // 两指针相遇
+    while (left < right) {
+        // 保证索引不越界的情况下从左找到一个偶数
+        while (left < right && (nums[left] & 1) == 1) left++;
+        // 保证索引不越界的情况下从右向左找到一个基数
+        while (left < right && (nums[right] & 1) == 0) right--;
+        swap(nums, left, right);
     }
+    return nums;
 }
 
-private boolean isEven(int x) {
-    return x % 2 == 0;
+private void swap(int[] nums, int left, int right) {
+    int tmp = nums[left];
+    nums[left] = nums[right];
+    nums[right] = tmp;
 }
 ```
 
-方法二：使用**==冒泡思想==**，每次都**把当前偶数上浮到当前==最右边==**。时间复杂度 O(N<sup>2</sup>)，空间复杂度 O(1)，**时间换空间**。
-
-```java
-public void reOrderArray(int[] nums) {
-    // 获取长度
-    int len = nums.length;
-    // 从右到左冒泡
-    for (int i = len - 1; i > 0; i--) {
-        // 然后从左到右取值
-        for (int j = 0; j < i; j++) {
-            // 遇到一个奇数和偶数的情况时就交换
-            if (isEven(nums[j]) && !isEven(nums[j + 1])) {
-                swap(nums, j, j + 1);
-            }
-        }
-    }
-}
-
-private boolean isEven(int x) {
-    return x % 2 == 0;
-}
-
-private void swap(int[] nums, int i, int j) {
-    int t = nums[i];
-    nums[i] = nums[j];
-    nums[j] = t;
-}
-```
-
-----
-
-#### 22. 链表中倒数第 K 个结点
+#### 22. 链表中倒数第K个结点
 
 [NowCoder](https://www.nowcoder.com/practice/529d3ae5a407492994ad2a246518148a?tpId=13&tqId=11167&tPage=1&rp=1&ru=/ta/coding-interviews&qru=/ta/coding-interviews/question-ranking)
 
