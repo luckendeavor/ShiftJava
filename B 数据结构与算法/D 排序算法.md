@@ -357,7 +357,7 @@ public static void shellSort(int[] arr) {
 
 ##### 2. 代码实现
 
-以下是归并排序的算法，类似于**树的后序遍历**，即**先处理左右**再进行数据 **merge**。
+以下是归并排序的算法，类似于**树的后序遍历**，即**先处理左右**再进行数据 **merge**。merge 的时候也就是双指针普通的合并两个有序数组的算法。
 
 ```java
 public static void mergeSort(int[] array) {
@@ -366,50 +366,38 @@ public static void mergeSort(int[] array) {
     mergeSort(array, 0, array.length - 1);
 }
 
-/**
- * 归并排序 内部排序接口
- *
- * @param array 数组
- */
 private static void mergeSort(int[] array, int left, int right) {
-    // Base case
+    // 当切分到仅一个元素时返回
     if (left == right) return;
-    // 寻找当前数组中间值等价于mid = (left + right) / 2
-    int mid = left + ((right - left) >> 1);
+    // 当前数组中值
+    int mid = left + ((right - left) / 2);
+    // 分别对两边排序
     mergeSort(array, left, mid);
     mergeSort(array, mid + 1, right);
-    // 对左右两部分结果进行合并
+    // 最后对左右两部分结果进行合并
     merge(array, left, mid, right);
 }
 
-/**
- * 使用外排的方式合并两个已经排序的数组
- *
- * @param array 整个数组
- * @param left 左
- * @param mid 中
- * @param right 右
- */
-private static void merge(int[] array, int left, int mid, int right) {
-    // 定义一个辅助数组用于外排
-    int[] temp = new int[right - left + 1];
-    int i = 0;
-    int pointerLeft = left;
-    int pointerRight = mid + 1;
-    // 不断复制左右两个数组中较小的元素到辅助数组中
-    while (pointerLeft <= mid && pointerRight <= right) {
-        temp[i++] = array[pointerLeft] < array[pointerRight] ? array[pointerLeft++] : array[pointerRight++];
+public static void merge(int[] array, int left, int mid, int right) {
+    // 辅助数组
+    int[] tmp = new int[array.length];
+    // p1、p2是检测指针，k是元素存放指针
+    int p1 = left, p2 = mid + 1, k = left;
+    // 也就是合并两个有序的数组到一个数组
+    while (p1 <= mid && p2 <= right) {
+        if (array[p1] <= array[p2]) {
+            tmp[k++] = array[p1++];
+        } else {
+            tmp[k++] = array[p2++];
+        }
     }
-    // 此时说明已经其中有一个数组越界了则复制另一个即可
-    while (pointerLeft <= mid) {
-        temp[i++] = array[pointerLeft++];
-    }
-    while (pointerRight <= right) {
-        temp[i++] = array[pointerRight++];
-    }
-    // 将辅助数组元素复制回原数组
-    for (i = 0; i < temp.length; i++) {
-        array[left + i] = temp[i];
+    // 说明其中一个数组复制完了，直接将后面所有元素加到合并的序列中
+    while (p1 <= mid) tmp[k++] = array[p1++];
+    while (p2 <= right) tmp[k++] = array[p2++];
+
+    // 复制回原数组
+    for (int i = left; i <= right; i++) {
+        array[i] = tmp[i];
     }
 }
 ```
