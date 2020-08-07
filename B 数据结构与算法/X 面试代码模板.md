@@ -185,6 +185,21 @@ public static void merge(int[] array, int left, int mid, int right) {
 }
 ```
 
+##### 4. 找链表中间结点的模板
+
+```java
+// 找到前半部分的末尾
+private ListNode endOfFirstHalf(ListNode head) {
+    ListNode fast = head;
+    ListNode slow = head;
+    while (fast.next != null && fast.next.next != null) {
+        fast = fast.next.next;
+        slow = slow.next;
+    }
+    return slow;
+}
+```
+
 
 
 
