@@ -2288,14 +2288,13 @@ private String deserializeStr;
 
 // 前序遍历方式序列化
 public String serialize(TreeNode root) {
-    if (root == null)
-        return "#";
-    return root.value + " " + Serialize(root.left) + " " + Serialize(root.right);
+    if (root == null) return "#";
+    return root.val + "!" + serialize(root.left) + "!" + serialize(root.right);
 }
 
 public TreeNode deserialize(String str) {
     deserializeStr = str;
-    return Deserialize();
+    return deserialize();
 }
 
 // 反序列化为二叉树
@@ -2310,18 +2309,18 @@ private TreeNode deserialize() {
     // 如果是#代表是null值
     if (nodeString.equals("#")) return null;
     int val = Integer.parseInt(nodeString);
-    TreeNode t = new TreeNode(val);
+    TreeNode root = new TreeNode(val);
     // 递归解析左右子结点
-    t.left = Deserialize();
-    t.right = Deserialize();
+    root.left = deserialize();
+    root.right = deserialize();
     // 然后返回自己
-    return t;
+    return root;
 }
 ```
 
 ###### (2) 层序方式
 
-利用层序遍历的方式实现序列化与反序列化。
+利用**层序遍历**的方式实现序列化与反序列化。面试用这个！
 
 ```java
 public String serialize2(TreeNode root) {
@@ -2333,10 +2332,13 @@ public String serialize2(TreeNode root) {
         TreeNode node = queue.poll();
         if (node != null) {
             res.append(node.val + "#");
-            // 这里即使是空节点也需要加进去
+            // 这里即使是null节点也需要加进去
             queue.add(node.left);
             queue.add(node.right);
-        } else res.append("null#");
+        } else {
+            // 空节点单独序列化
+            res.append("null#");
+        }
     }
     res.deleteCharAt(res.length() - 1);
     return res.toString();
@@ -2345,26 +2347,27 @@ public String serialize2(TreeNode root) {
 public TreeNode deserialize2(String data) {
     if (data.length() == 0) return null;
     // 拆分成结点值
-    String[] vals = data.split("#");
+    String[] nums = data.split("#");
     // 构造根结点
-    TreeNode root = new TreeNode(Integer.parseInt(vals[0]));
+    TreeNode root = new TreeNode(Integer.parseInt(nums[0]));
+    // 也是利用队列来不断出队列进行设置
     Queue<TreeNode> queue = new LinkedList<>();
     queue.add(root);
-    int i = 1;
+    int numIndex = 1;
     while (!queue.isEmpty()) {
         // 弹出根结点
         TreeNode node = queue.poll();
         // 不断设置其左右结点
-        if (!"null".equals(vals[i])) {
-            node.left = new TreeNode(Integer.parseInt(vals[i]));
+        if (!"null".equals(nums[numIndex])) {
+            node.left = new TreeNode(Integer.parseInt(nums[numIndex]));
             queue.add(node.left);
         }
-        i++;
-        if (!"null".equals(vals[i])) {
-            node.right = new TreeNode(Integer.parseInt(vals[i]));
+        numIndex++;
+        if (!"null".equals(nums[numIndex])) {
+            node.right = new TreeNode(Integer.parseInt(nums[numIndex]));
             queue.add(node.right);
         }
-        i++;
+        numIndex++;
     }
     return root;
 }
