@@ -394,25 +394,25 @@ Accept-Encoding: gzip, deflate, cpmpress, identity
 
 > 形如 **if-XXXX** 的请求首部字段，都是**条件请求**，服务器接收到**附带的请求条件**后，只有**当条件满足时**，服务器才会执行。
 
-###### **8. if-Match**
+###### 8. if-Match
 
 通常在请求方法为 GET 时，服务器仅在请求资源的 ETag 值为 if-Match 首部字段值之一时，才会返回资源，当请求方法为 PUT 时，才允许上传资源。ETag 为一份资源独一无二的实体标记，资源更新后实体标记值 ETag 也会更新。
 
-###### **9. if-Modified-since**
+###### 9. if-Modified-since
 
 通常该字段只用在 GET 请求中，如果资源在 if-Modified-Since 字段值日期之后发生更新，则服务器接受该请求， 否则会返回一个不带响应体的 304（Not Modified），用于确认代理或客户端本地资源的有效性。
 
-###### **10. if-None-Match**
+###### 10. if-None-Match
 
 当且仅当服务器上**没有任何资源**的实体标记 **ETag 值**与该首部字段中列出的值**相对应**，服务器才会返回所请求的资源，**否则返回 304**。
 
-###### **11. if-Range**
+###### 11. if-Range
 
 范围请求。用来当满足条件时（当 if-range 字段值中的条件得到满足，通常是满足 last-Modified 或 ETag），是 Range 字段起作用，服务器返回 206 Partial Content，如果 if-Range 字段值中的条件没有得到满足，则作为正常处理返回 200 OK 的**全部**资源。
 
 ----
 
-###### **12. Proxy-Authorization**
+###### 12. Proxy-Authorization
 
 用于用户代理给代理服务器发送身份验证的凭证。
 
@@ -420,7 +420,7 @@ Accept-Encoding: gzip, deflate, cpmpress, identity
 Proxy-Authorization: Basic YWxhZGRpbjpvcGVuc2VzYW1l
 ```
 
-###### **13. Range**
+###### 13. Range
 
 用于只需获取部分资源的**范围请求**，字段值表明服务器资源的指定范围。
 
@@ -428,15 +428,15 @@ Proxy-Authorization: Basic YWxhZGRpbjpvcGVuc2VzYW1l
 Range: <unit>=<range-start>-<range-end>, <range-start>-<range-end>
 ```
 
-###### **14. Referer**
+###### 14. Referer
 
 可以根据 Referer 查看请求资源的是从**哪个页面**发起的。
 
-###### **15. TE**
+###### 15. TE
 
 告知服务器客户端能够处理响应的传输编码方式以及相对优先级。
 
-###### **16. User-Agent**
+###### 16. User-Agent
 
 将创建请求的浏览器和用户代理信息等名称传达给服务器。**爬虫**必备。
 
@@ -501,18 +501,18 @@ Accept-Ranges: none | bytes    // none就是不能
 
 实体首部字段是包含在请求报文和响应报文中的**实体部分所使用的首部**，用于补充内容的更新时间与实体相关的信息。请求报文和响应报文中都含有的与实体相关的首部。
 
-|      首部字段名      |            说明             |
-| :------------------: | :-------------------------: |
-|      **Allow**       | 资源可**支持的 HTTP 方法**  |
-|   Content-Encoding   |   实体主体适用的编码方式    |
-| **Content-Language** |     实体主体的自然语言      |
-|    Content-Length    | 实体主体部分的大小（bites） |
-|   Content-Location   |     替代对应资源的 URI      |
-|     Content-MD5      |     实体主体的报文摘要      |
-|  **Content-Range**   |     实体主体的位置范围      |
-|   **Content-Type**   |     实体主体的媒体类型      |
-|     **Expires**      | 实体主体**过期的日期**时间  |
-|  **Last-Modified**   |   资源的最后修改日期时间    |
+|      首部字段名      |              说明               |
+| :------------------: | :-----------------------------: |
+|      **Allow**       |   资源可**支持的 HTTP 方法**    |
+|   Content-Encoding   |     实体主体适用的编码方式      |
+| **Content-Language** |       实体主体的自然语言        |
+|    Content-Length    | **实体主体部分的大小**（bites） |
+|   Content-Location   |       替代对应资源的 URI        |
+|     Content-MD5      |       实体主体的报文摘要        |
+|  **Content-Range**   |       实体主体的位置范围        |
+|   **Content-Type**   |       实体主体的媒体类型        |
+|     **Expires**      |   实体主体**过期的日期**时间    |
+|  **Last-Modified**   |     资源的最后修改日期时间      |
 
 ###### **1. ALlow**
 
@@ -865,7 +865,7 @@ Chunked Transfer Encoding，可以把数据分割成多块，让浏览器逐步�
 
 ##### 7. 范围请求
 
-如果网络出现中断，服务器只发送了一部分数据，范围请求可以使得客户端只请求服务器**未发送的那部分数据**，从而避免服务器重新发送所有数据。
+如果网络出现中断，服务器只发送了一部分数据，**范围请求**可以使得客户端只请求服务器**未发送的那部分数据**，从而避免服务器重新发送所有数据。
 
 ###### (1) Range
 
