@@ -29,7 +29,7 @@ Redis Sentinel 与 Redis 主从复制的架构相比较**只是多了若干 Sent
 
 **Sentinel 节点本身就是独立的 Redis 节点，只不过它们有一些特殊，它们不存储数据，只支持部分命令。** Sentinel 节点**集合**会定期对**所有节点**进行监控，特别是对主节点的**故障实现自动转移**。
 
-Redis Sentinel 同时包含了**若个 Sentinel 节点**，这样做也带来了两个好处:
+Redis Sentinel 同时包含了**若个 Sentinel 节点**，这样做也带来了两个好处：
 
 1. 对于节点的**故障判断**是由多个 Sentinel 节点**共同完成**，这样可以有效地**防止误判**。
 2. Sentinel 节点集合是由若干个 Sentinel 节点组成的，这样即使个别 Sentinel 节点不可用，整个 Sentinel 节点集合依然是健壮的，防止 Sentinel 出现单点故障。

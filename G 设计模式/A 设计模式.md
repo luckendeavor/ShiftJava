@@ -338,7 +338,7 @@ public static synchronized Singleton getUniqueInstance() {
 private static Singleton uniqueInstance = new Singleton();
 ```
 
-###### (4) 双重校验锁-线程安全
+###### (4) 双重校验锁-线程安全 
 
 uniqueInstance 只需要被实例化**一次**，之后就可以直接使用了。**加锁操作只需要对实例化那部分**的代码进行（而不是像懒汉那样直接把整个方法加锁），只有当 uniqueInstance **没有被实例化时**，才需要进行**加锁**。
 

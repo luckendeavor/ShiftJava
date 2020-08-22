@@ -152,7 +152,6 @@ public boolean add(E e) {
 ```java
 /**
  * 得到最小扩容量
- *
  * @param minCapacity
  */
 private void ensureCapacityInternal(int minCapacity) {

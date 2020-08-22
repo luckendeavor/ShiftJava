@@ -4263,7 +4263,7 @@ public int[] constructArr(int[] nums) {
     // res = [1, 0, 0, 0, 0]
     // 初始化
     res[0] = 1;
-    // 计算下三角
+    // 对结果数组赋值
     for(int i = 1; i < nums.length; i++) {
         res[i] = res[i - 1] * nums[i - 1];
         // res = [1, 1, 2, 6, 24]
