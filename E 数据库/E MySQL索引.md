@@ -403,7 +403,7 @@ EXPLAIN SELECT * FROM employees WHERE name = 'LiLei' or name = 'HanMeimei';
 Explain 分析比较重要的属性有：
 
 - **select_type**：select 查询的类型，主要是区别普通查询和联合查询、子查询之类的复杂查询。
-- **type**：联合查询所使用的类型，type 显示的是**访问类型**，是**较为重要**的一个指标。结果值从好到坏依次是：**system > const > eq_ref > ref >fulltext > ref_or_null > index_merge > unique_subquery >index_subquery > range > index > ALL**。一般来说，得保证查询**至少达到 range 级别，最好能达到 ref**。type = const 表示通过**索引一次**就找到了；type = all 表示为**全表扫描**。
+- **type**：**联合查询所使用的类型**，type 显示的是**访问类型**，是**较为重要**的一个指标。结果值从好到坏依次是：**system > const > eq_ref > ref >fulltext > ref_or_null > index_merge > unique_subquery >index_subquery > range > index > ALL**。一般来说，得保证查询**至少达到 range 级别，最好能达到 ref**。type = const 表示通过**索引一次**就找到了；type = all 表示为**全表扫描**。
 
 - **key**：显示 MySQL 实际决定使用的**键**。如果**没有索引被选择，键是 NULL**。key=primary 表示使用了主键；key=null 表示没用到索引。
 
@@ -413,7 +413,7 @@ Explain 分析比较重要的属性有：
 
 - **ref**：显示哪个字段或常数与 key 一起被使用。
 - **rows**：这个数表示 MySQL 要**遍历多少数据**才能找到，在 InnoDB 上是不准确的。
-- **Extra**：如果是 **Only index**，这意味着信息只用索引树中的信息检索出的，这比扫描整个表要快。如果是 **where used**，就是使用上了 where 限制。如果是 **impossible where** 表示用不着 where，一般就是没查出来啥。
+- **Extra**：如果是 **Only index**，这意味着信息只用索引树中的信息检索出的，这比扫描整个表要快。如果是 **where used**，就是使用上了 **where 限制**。如果是 **impossible where** 表示用不着 where，一般就是没查出来啥。
 
 ##### 4. Trace工具
 

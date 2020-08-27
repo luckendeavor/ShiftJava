@@ -7,7 +7,7 @@
 ##### 1. 杂记
 
 - TreeMap 是一个**有序的 key-value 集合**，它是通过**红黑树**实现的，红黑树结构天然支持排序，默认情况下通过 Key 值的**自然顺序**进行排序；TreeMap 是按照**键**而不是值**有序**，都是对**键**进行比较。
-- TreeMap 继承了 NavigableMap 接口，NavigableMap 接口继承了 SortedMap 接口，可支持一系列的导航定位以及导航操作的方法，当然只是提供了接口，需要 TreeMap 自己去实现；
+- TreeMap 继承了 NavigableMap 接口，NavigableMap 接口继承了 SortedMap 接口，可支持一系列的导航定位以及导航操作的方法，当然只是提供了接口，需要 TreeMap 自己去实现。
 
 ##### 2. 基本API与使用
 
@@ -131,7 +131,7 @@ while (iterator.hasNext()) {
 
 ```java
 /**
- * 自定义比较器，不传就默认使用自然排序
+ * 自定义比较器,不传就默认使用自然排序
  */
 private final Comparator<? super K> comparator;
 
@@ -141,7 +141,7 @@ private final Comparator<? super K> comparator;
 private transient Entry<K,V> root;
 
 /**
- * Map中key-val对的数量，也即是红黑树中节点Entry的数量
+ * Map中key-val对的数量,也即是红黑树中节点Entry的数量
  */
 private transient int size = 0;
 
@@ -284,7 +284,6 @@ public V put(K key, V value) {
          * 那么继续在root的右子树中找，从root的右孩子节点（root.right）开始;
          * 如果恰好key==root.key，那么直接根据root节点的value值即可。
          * 后面的循环规则一样，当遍历到的当前节点作为起始节点，逐步往下找
-         *
          * 需要注意的是：这里并没有对key是否为null进行判断，建议自定义Comparator时应该要考虑在内
          */
         do {
@@ -345,7 +344,7 @@ put 方法源码中通过 **fixAfterInsertion**(e) 方法来进行**自平衡**�
 | 情况3  |             -              |                  -                   | 父节点为红色右节点，叔父节点为黑色，插入左子节点，那么通过【**右左节点旋转**】 |
 | 情况4  |             -              |                  -                   | 父节点为红色右节点，叔父节点为黑色，插入右子节点，那么通过【**右右节点旋转**】 |
 
-接下来看一看这个方法
+接下来看一看这个方法：
 
 ```java
 private void fixAfterInsertion(Entry<K,V> x) {
@@ -402,7 +401,7 @@ private void fixAfterInsertion(Entry<K,V> x) {
 }
 ```
 
-源码中通过 rotateLeft 进行【左旋】，通过 rotateRight 进行【右旋】。都非常类似，我们就看一下【左旋】的代码，【左旋】规则如下：“逆时针旋转两个节点，让一个节点被其右子节点取代，而该节点成为右子节点的左子节点”。
+源码中通过 rotateLeft 进行【**左旋**】，通过 rotateRight 进行【**右旋**】。都非常类似，就看一下【**左旋**】的代码，【左旋】规则如下：“逆时针旋转两个节点，让一个节点被其右子节点取代，而该节点成为右子节点的左子节点”。
 
 ```java
 private void rotateLeft(Entry<K,V> p) {

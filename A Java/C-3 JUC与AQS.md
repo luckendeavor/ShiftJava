@@ -365,10 +365,10 @@ public final void acquire(int arg) {
 
 再来总结下它的流程吧：
 
-1. 调用自定义同步器的 **tryAcquire**() 尝试直接去获取资源，如果成功则直接返回。
-2. 没成功，则 addWaiter() 将该线程加入等待队列的**尾部**，并标记为**独占模式**。
-3. acquireQueued() 使线程在等待队列中休息，有机会时（轮到自己，会被 unpark()）会去尝试获取资源。获取到资源后才返回。如果在整个等待过程中被中断过，则返回 true，否则返回 false。
-4. 如果线程在等待过程中被中断过，它是不响应的。只是获取资源后才再进行自我中断 selfInterrupt()，将中断补上。
+1. 调用自定义同步器的 **tryAcquire**() 尝试**直接去获取资源**，如果成功则直接返回。
+2. 没成功，则 **addWaiter**() 将该线程加入**等待队列的尾部**，并标记为**独占模式**。
+3. acquireQueued() 使线程在**等待队列中休息**，有机会时（轮到自己，会被 unpark()）会去**尝试获取资源**。获取到资源后才返回。如果在整个等待过程中被中断过，则返回 true，否则返回 false。
+4. 如果线程在等待过程中**被中断过**，它是不响应的。只是获取资源后才再进行自我中断 selfInterrupt()，将中断补上。
 
 由于此函数是重中之重，再用流程图总结一下：
 
@@ -599,7 +599,7 @@ protected boolean isHeldExclusively();
 
 > **使用方式**
 
-首先需要继承 AbstractQueuedSynchronizer 这个类，然后根据需求去**重写**相应的方法，比如要实现一个**独占锁**，那就去重写 **tryAcquire**，**tryRelease** 方法，要实现**共享锁**，就去重写 **tryAcquireShared**，**tryReleaseShared**；最后，在组件中**调用 AQS 中的模板方法**就可以了，而这些模板方法是**会调用到之前重写的那些方法**的。也就是说只需要很小的工作量就可以实现自己的**同步组件**，重写的那些方法，仅仅是一些简单的对于共享资源 **state 的获取和释放操作**，至于像是获取资源失败，线程需要阻塞之类的操作，自然是 AQS 自己完成了。
+首先需要继承 **AbstractQueuedSynchronizer** 这个类，然后根据需求去**重写**相应的方法，比如要实现一个**独占锁**，那就去重写 **tryAcquire**，**tryRelease** 方法，要实现**共享锁**，就去重写 **tryAcquireShared**，**tryReleaseShared**；最后，在组件中**调用 AQS 中的模板方法**就可以了，而这些模板方法是**会调用到之前重写的那些方法**的。也就是说只需要很小的工作量就可以实现自己的**同步组件**，重写的那些方法，仅仅是一些简单的对于共享资源 **state 的获取和释放操作**，至于像是获取资源失败，线程需要阻塞之类的操作，自然是 AQS 自己完成了。
 
 默认情况下，每个方法都抛出 **UnsupportedOperationException**。 这些方法的实现必须是内部线程安全的，并且通常应该简短而不是阻塞。AQS 类中的**其他方法都是 final** ，所以无法被其他类使用，只有这几个方法可以被其他类使用。
 
@@ -624,9 +624,11 @@ protected boolean isHeldExclusively();
 
 Mutex 是一个**不可重入的互斥锁**实现。锁资源（AQS 里的 state）只有**两种状态**：**0 表示未锁定，1 表示锁定**。下边是 Mutex 的核心源码：
 
+这里自定义同步器继承了 AQS，然后覆写了 AQS 的 **isHeldExclusively 方法、tryAcquire 方法和 tryRelease 方法**。
+
 ```java
 class Mutex implements Lock, java.io.Serializable {
-    // 自定义同步器
+    // 自定义同步器继承AQS类
     private static class Sync extends AbstractQueuedSynchronizer {
         // 判断是否锁定状态
         protected boolean isHeldExclusively() {
@@ -653,7 +655,8 @@ class Mutex implements Lock, java.io.Serializable {
             return true;
         }
     }
-
+    
+    // 下面是实现控制逻辑的自定义方法
     // 真正同步类的实现都依赖继承于AQS的自定义同步器！
     private final Sync sync = new Sync();
 

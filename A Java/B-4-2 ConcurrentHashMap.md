@@ -531,7 +531,7 @@ final V putVal(K key, V value, boolean onlyIfAbsent) {
 - 如果**没有 hash 冲突**（也就是 key 对应的数据桶**还没有元素**时）就**直接 CAS 插入**。
 - 如果**还在进行扩容**操作就**先进行扩容**（**辅助扩容**）。
 - 如果**存在 hash 冲突**（说明 key 对应的数据桶**已有**数据链表了），就**加锁**来保证线程安全（注意这里是对单个 桶 的**头结点**进行加锁），这里有两种情况，一种是**链表形式**就直接遍历到**尾端插入**，一种是**红黑树**就按照红黑树结构**插入**。当然如果是 key 相同则进行值的**替换**。
-- 最后一个如果该链表的**数量大于阈值 8**，就要先转换成**黑红树**的结构，break 再一次进入循环。
+- 最后一个如果该链表的**数量大于阈值 8**，就要先转换成**红黑树**的结构，break 再一次进入循环。
 - 如果添加成功就调用 **addCount**() 方法统计 **size**，并且检查是否**需要扩容**。
 
 ###### (1) 初始化
@@ -572,7 +572,7 @@ private final Node<K,V>[] initTable() {
 }
 ```
 
-**sizeCtl** 是 ConcurrentHashMap 的**初始化**，**扩容操作**中一个至关重要的控制变量，其声明:
+**sizeCtl** 是 ConcurrentHashMap 的**初始化**、**扩容操作**中一个至关重要的控制变量，其声明：
 
 ```java
 private transient volatile int sizeCtl;
@@ -686,7 +686,7 @@ private final void tryPresize(int size) {
 }
 ```
 
-前面提到，ConcurrentHashMap 支持**==多线程并行扩容==**，具体来说，是支持**多线程将节点从老的数组拷贝到新的数组**，而**新数组创建**仍是**一个线程完成**(不然多个线程创建多个对象，最后只使用一个，这不是浪费是什么?)
+前面提到，ConcurrentHashMap 支持**==多线程并行扩容==**，具体来说，是支持**多线程将节点从老的数组拷贝到新的数组**，而**新数组初始化创建**仅允许**一个线程完成**（肯定只允许创建一个）。
 
 **竞争成功**的线程为 **transfer** 方法的 nextTab 参数传入 null，这将导致**新数组的创建**。**竞争失败**的线程将会判断当前节点转移工作**是否已经完成**，如果已经完成，那么意味着**扩容的完成**，退出即可，如果没有完成，那么此线程将会进行**辅助转移**。
 
@@ -748,7 +748,7 @@ private final void transfer(Node<K,V>[] tab, Node<K,V>[] nextTab) {
             // 进入这里说明所有的桶位都已被处理完毕或是被包含在某个转移线程的申请分片中(即待转移)
             int sc;
             if (finishing) {
-                // 进行收尾工作，此工作一定是由最后一个分片申请线程进行的，这里用volatile写将nextTable置为null
+                // 进行收尾工作,此工作一定是由最后一个分片申请线程进行的，这里用volatile写将nextTable置为null
                 // table指向新数组
                 nextTable = null;
                 table = nextTab;
@@ -857,7 +857,7 @@ private final void transfer(Node<K,V>[] tab, Node<K,V>[] nextTab) {
 
 **分片**
 
-每个线程针对一个**分片**来进行转移操作，所谓的一个分片其实就是 **bin** 数组的**一段**。默认的最小**分片大小为 16**，如果所在机器 只有一个 CPU 核心，那么就取 16，否则取(数组大小 / 8 / CPU核心数)与 16 的较大者。
+每个**线程**针对一个**分片**来进行转移操作，所谓的一个分片其实就是 **bin** 数组的**一段**。默认的最小**分片大小为 16**，如果所在机器 只有一个 CPU 核心，那么就取 16，否则取(数组大小 / 8 / CPU核心数)与 16 的较大者。
 
 **transferIndex**
 
@@ -986,7 +986,7 @@ ConcurrentHashMap **取消了 Segment 分段锁**，**采用 CAS 和 synchronize
 
 ##### 1. JDK7与JDK8的比较
 
-JDK 1.7 使用**分段锁机制**来实现并发更新操作，核心类为 **Segment**，它继承自重入锁 ReentrantLock，并发度与 Segment 数量相等。JDK1.8 版本的 ConcurrentHashMap 的数据结构已经接近 HashMap，ConcurrentHashMap 只是增加了**同步**的操作来**控制并发**，从JDK1.7版本的 **ReentrantLock+Segment+HashEntry**，到 JDK1.8 版本中**synchronized+CAS+数组+链表+红黑树**，总结如下：
+JDK 1.7 使用**分段锁机制**来实现并发更新操作，核心类为 **Segment**，它继承自重入锁 ReentrantLock，并发度与 Segment 数量相等。JDK1.8 版本的 ConcurrentHashMap 的数据结构已经接近 HashMap，ConcurrentHashMap 只是增加了**同步**的操作来**控制并发**，从 JDK1.7 版本的 **ReentrantLock+Segment+HashEntry**，到 JDK1.8 版本中**synchronized+CAS+数组+链表+红黑树**，总结如下：
 
 1. JDK1.8 的实现**降低了锁的粒度**，JDK1.7 版本锁的粒度是**基于 Segment** 的，包含**多个 HashEntry**，而 JDK1.8 锁的粒度就是 **HashEntry**（**首节点**）。JDK1.8 版本的**数据结构变得更加简单**，使得操作也更加清晰流畅，因为已经使用 **synchronized** 来进行同步，所以不需要分段锁的概念，也就不需要 Segment 这种数据结构了，由于粒度的降低，实现的复杂度也增加了。
 2. JDK1.8 使用**红黑树**来优化链表，基于长度很长的链表的遍历是一个很漫长的过程，而红黑树的遍历效率是很快的，代替一定阈值的链表。Java7 没有使用红黑树。
@@ -997,7 +997,7 @@ JDK 1.7 使用**分段锁机制**来实现并发更新操作，核心类为 **Se
 
 > JDK1.8 为什么使用内置锁 **synchronized** 来代替重入锁 ReentrantLock?
 
-- 因为**粒度降低了**，在相对而言的低粒度加锁方式，synchronized 并不比 ReentrantLock 差，在粗粒度加锁中 ReentrantLock 可能通过 Condition 来控制各个低粒度的边界所以更加的灵活，而在**低粒度**中 Condition 的优势就较低了。
+- 因为**粒度降低了**，在相对而言的低粒度加锁方式，synchronized 并不比 ReentrantLock 差，在**粗粒度**加锁中 ReentrantLock 可能通过 Condition 来控制各个低粒度的边界所以更加的灵活，而在**低粒度**中 Condition 的优势就较低了。
 - 基于的 synchronized 是一直被 JVM 不断优化的， 优化空间更大，使用内嵌的关键字比使用 API 更加自然。
 - 在大量的数据操作下，对于 JVM 的内存压力，基于 API 的 ReentrantLock 会开销更多的内存，虽然不是瓶颈，但是也是一个选择依据。
 
